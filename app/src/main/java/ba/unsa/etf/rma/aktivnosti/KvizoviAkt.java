@@ -1,9 +1,11 @@
-package ba.unsa.etf.rma;
+package ba.unsa.etf.rma.aktivnosti;
 
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 
-public class MainActivity extends AppCompatActivity {
+import ba.unsa.etf.rma.R;
+
+public class KvizoviAkt extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
