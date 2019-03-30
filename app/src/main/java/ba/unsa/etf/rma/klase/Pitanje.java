@@ -1,9 +1,10 @@
 package ba.unsa.etf.rma.klase;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 
-public class Pitanje {
+public class Pitanje implements Serializable {
     private String naziv;
     private String tekstPitanja;
     private ArrayList<String> odgovori;
@@ -55,5 +56,10 @@ public class Pitanje {
     public ArrayList<String> dajRandomOdgovore() {
         Collections.shuffle(odgovori);
         return odgovori;
+    }
+
+    @Override
+    public String toString() {
+        return naziv;
     }
 }

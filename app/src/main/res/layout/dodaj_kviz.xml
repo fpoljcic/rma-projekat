@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="10dp"
+    tools:context=".aktivnosti.DodajKvizAkt">
+
+    <Spinner
+        android:id="@+id/spKategorije"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <EditText
+        android:id="@+id/etNaziv"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:ems="10"
+        android:inputType="textPersonName"
+        android:paddingTop="5dp" />
+
+    <TextView
+        android:id="@+id/textView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingTop="10dp"
+        android:text="Pitanja u kvizu"
+        android:textAlignment="center"
+        android:textColor="@color/colorPrimaryDark"
+        android:textSize="18sp" />
+
+    <ListView
+        android:id="@+id/lvDodanaPitanja"
+        android:layout_width="match_parent"
+        android:layout_height="127dp" />
+
+    <TextView
+        android:id="@+id/textView3"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingTop="10dp"
+        android:text="Moguca pitanja"
+        android:textAlignment="center"
+        android:textColor="@android:color/holo_orange_dark"
+        android:textSize="18sp" />
+
+    <ListView
+        android:id="@+id/lvMogucaPitanja"
+        android:layout_width="match_parent"
+        android:layout_height="129dp" />
+
+    <Button
+        android:id="@+id/btnDodajKviz"
+        android:layout_width="353dp"
+        android:layout_height="wrap_content"
+        android:paddingTop="5dp"
+        android:text="Dodaj kviz"
+        android:textColor="@android:color/holo_blue_dark"
+        android:textSize="18sp" />
+</LinearLayout>

@@ -1,6 +1,7 @@
 package ba.unsa.etf.rma.klase;
 
 import java.util.ArrayList;
+import java.util.Collections;
 
 public class Kviz {
     private String naziv;
@@ -43,5 +44,9 @@ public class Kviz {
 
     public void dodajPitanje(Pitanje pitanje) {
         pitanja.add(pitanje);
+    }
+
+    public String getImage() {
+        return "standard";
     }
 }
