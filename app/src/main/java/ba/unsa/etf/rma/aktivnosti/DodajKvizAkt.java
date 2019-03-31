@@ -23,7 +23,7 @@ public class DodajKvizAkt extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.dodaj_kviz);
+        setContentView(R.layout.activity_dodaj_kviz);
         linkControls();
     }
 
