@@ -15,18 +15,27 @@ import java.util.ArrayList;
 
 import ba.unsa.etf.rma.R;
 
-public class KvizArrayAdapter extends BaseAdapter implements View.OnClickListener {
+public class ListAdapter extends BaseAdapter implements View.OnClickListener {
     private Activity activity;
     private ArrayList data;
     private static LayoutInflater inflater = null;
     public Resources res;
-    private Kviz kviz = null;
+    private Class classType;
 
-    public KvizArrayAdapter(Activity a, ArrayList d, Resources resLocal) {
+    public ListAdapter(Activity a, ArrayList d, Resources resLocal, Class classType) {
         activity = a;
         data = d;
         res = resLocal;
         inflater = (LayoutInflater) activity.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        this.classType = classType;
+    }
+
+    public Class getClassType() {
+        return classType;
+    }
+
+    public void setClassType(Class classType) {
+        this.classType = classType;
     }
 
     public int getCount() {
@@ -65,14 +74,24 @@ public class KvizArrayAdapter extends BaseAdapter implements View.OnClickListene
         if (data.size() <= 0) {
             holder.name.setText("No Data");
         } else {
-            kviz = null;
-            kviz = (Kviz) data.get(position);
-            if (kviz == null) {
-                holder.name.setText("Dodaj Kviz");
-                holder.icon.setImageResource(res.getIdentifier("ba.unsa.etf.rma:drawable/add", null, null));
-            } else {
-                holder.name.setText(kviz.getNaziv());
-                holder.icon.setImageResource(res.getIdentifier("ba.unsa.etf.rma:drawable/" + kviz.getImage(), null, null));
+            if (classType == Kviz.class) {
+                Kviz object = (Kviz) data.get(position);
+                if (object == null) {
+                    holder.name.setText("Dodaj Kviz");
+                    holder.icon.setImageResource(res.getIdentifier("ba.unsa.etf.rma:drawable/add", null, null));
+                } else {
+                    holder.name.setText(object.getNaziv());
+                    holder.icon.setImageResource(res.getIdentifier("ba.unsa.etf.rma:drawable/" + object.getImage(), null, null));
+                }
+            } else if (classType == Pitanje.class) {
+                Pitanje object = (Pitanje) data.get(position);
+                if (object == null) {
+                    holder.name.setText("Dodaj Pitanje");
+                    holder.icon.setImageResource(res.getIdentifier("ba.unsa.etf.rma:drawable/add", null, null));
+                } else {
+                    holder.name.setText(object.getNaziv());
+                    holder.icon.setImageResource(res.getIdentifier("ba.unsa.etf.rma:drawable/" + object.getImage(), null, null));
+                }
             }
         }
         return vi;

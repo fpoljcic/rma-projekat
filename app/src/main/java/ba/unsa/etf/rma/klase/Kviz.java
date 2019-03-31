@@ -2,6 +2,7 @@ package ba.unsa.etf.rma.klase;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Objects;
 
 public class Kviz {
     private String naziv;
@@ -48,5 +49,19 @@ public class Kviz {
 
     public String getImage() {
         return "standard";
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Kviz kviz = (Kviz) o;
+        return Objects.equals(naziv, kviz.naziv) &&
+                Objects.equals(kategorija, kviz.kategorija);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(naziv, kategorija);
     }
 }

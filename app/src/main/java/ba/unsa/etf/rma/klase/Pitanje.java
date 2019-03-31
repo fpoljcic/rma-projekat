@@ -62,4 +62,8 @@ public class Pitanje implements Serializable {
     public String toString() {
         return naziv;
     }
+
+    public String getImage() {
+        return "standard";
+    }
 }

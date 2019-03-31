@@ -1,6 +1,9 @@
 package ba.unsa.etf.rma.klase;
 
-public class Kategorija {
+import java.io.Serializable;
+import java.util.Objects;
+
+public class Kategorija implements Serializable {
     private String naziv;
     private String id;
 
@@ -31,5 +34,19 @@ public class Kategorija {
     @Override
     public String toString() {
         return naziv;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Kategorija that = (Kategorija) o;
+        return Objects.equals(naziv, that.naziv) &&
+                Objects.equals(id, that.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(naziv, id);
     }
 }
