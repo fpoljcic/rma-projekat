@@ -64,8 +64,8 @@ public class ListAdapter extends BaseAdapter implements View.OnClickListener {
         if (convertView == null) {
             vi = inflater.inflate(R.layout.element_liste, null);
             holder = new ViewHolder();
-            holder.name = (TextView) vi.findViewById(R.id.name);
-            holder.icon = (ImageView) vi.findViewById(R.id.icon);
+            holder.name = vi.findViewById(R.id.name);
+            holder.icon = vi.findViewById(R.id.icon);
 
             vi.setTag(holder);
         } else

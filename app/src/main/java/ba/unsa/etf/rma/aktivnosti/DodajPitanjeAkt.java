@@ -21,11 +21,11 @@ public class DodajPitanjeAkt extends AppCompatActivity {
     }
 
     private void linkControls() {
-        questionField = (EditText) findViewById(R.id.etNaziv);
-        answerField = (EditText) findViewById(R.id.etOdgovor);
-        addAnswerBtn = (Button) findViewById(R.id.btnDodajOdgovor);
-        addRightAnswerBtn = (Button) findViewById(R.id.btnDodajTacan);
-        addQuestionBtn = (Button) findViewById(R.id.btnDodajPitanje);
-        answersList = (ListView) findViewById(R.id.lvOdgovori);
+        questionField = findViewById(R.id.etNaziv);
+        answerField = findViewById(R.id.etOdgovor);
+        addAnswerBtn = findViewById(R.id.btnDodajOdgovor);
+        addRightAnswerBtn = findViewById(R.id.btnDodajTacan);
+        addQuestionBtn = findViewById(R.id.btnDodajPitanje);
+        answersList = findViewById(R.id.lvOdgovori);
     }
 }

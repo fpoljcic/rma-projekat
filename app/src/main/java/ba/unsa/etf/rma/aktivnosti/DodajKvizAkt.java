@@ -78,10 +78,10 @@ public class DodajKvizAkt extends AppCompatActivity {
 
     private void linkControls() {
         Intent intent = getIntent();
-        quizName = (EditText) findViewById(R.id.etNaziv);
-        questionsList = (ListView) findViewById(R.id.lvDodanaPitanja);
-        optionalQuestionsList = (ListView) findViewById(R.id.lvMogucaPitanja);
-        button = (Button) findViewById(R.id.btnDodajKviz);
+        quizName = findViewById(R.id.etNaziv);
+        questionsList = findViewById(R.id.lvDodanaPitanja);
+        optionalQuestionsList = findViewById(R.id.lvMogucaPitanja);
+        button = findViewById(R.id.btnDodajKviz);
         String naziv = intent.getStringExtra("naziv");
         if (naziv != null) {
             pozicija = intent.getIntExtra("pozicija", -1);
@@ -94,7 +94,7 @@ public class DodajKvizAkt extends AppCompatActivity {
         mogucaPitanja = (ArrayList<Pitanje>) intent.getSerializableExtra("mogucaPitanja");
         optListAdapter = new ListAdapter(this, mogucaPitanja, getResources(), Pitanje.class);
         optionalQuestionsList.setAdapter(optListAdapter);
-        categorySpinner = (Spinner) findViewById(R.id.spKategorije);
+        categorySpinner = findViewById(R.id.spKategorije);
         int layoutID = android.R.layout.simple_list_item_1;
         kategorije = (ArrayList<Kategorija>) intent.getSerializableExtra("kategorija");
         ArrayAdapter<Kategorija> adapterKat = new ArrayAdapter<>(this, layoutID, kategorije);

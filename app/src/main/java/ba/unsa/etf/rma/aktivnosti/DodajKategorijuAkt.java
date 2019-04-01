@@ -19,9 +19,9 @@ public class DodajKategorijuAkt extends AppCompatActivity {
     }
 
     private void linkControls() {
-        categoryNameField = (EditText) findViewById(R.id.etNaziv);
-        categoryIconField = (EditText) findViewById(R.id.etIkona);
-        addIconBtn = (Button) findViewById(R.id.btnDodajIkonu);
-        addCategoryBtn = (Button) findViewById(R.id.btnDodajKategoriju);
+        categoryNameField = findViewById(R.id.etNaziv);
+        categoryIconField = findViewById(R.id.etIkona);
+        addIconBtn = findViewById(R.id.btnDodajIkonu);
+        addCategoryBtn = findViewById(R.id.btnDodajKategoriju);
     }
 }

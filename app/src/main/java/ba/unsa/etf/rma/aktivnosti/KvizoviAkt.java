@@ -127,11 +127,11 @@ public class KvizoviAkt extends AppCompatActivity {
     private void linkControls() {
         sviKvizovi.add(null);
         kvizovi.add(null);
-        categorySpinner = (Spinner) findViewById(R.id.spPostojeceKategorije);
+        categorySpinner = findViewById(R.id.spPostojeceKategorije);
         int layoutID = android.R.layout.simple_list_item_1;
         ArrayAdapter<Kategorija> adapterKat = new ArrayAdapter<>(this, layoutID, kategorije);
         categorySpinner.setAdapter(adapterKat);
-        quizList = (ListView) findViewById(R.id.lvKvizovi);
+        quizList = findViewById(R.id.lvKvizovi);
         listAdapter = new ListAdapter(this, kvizovi, getResources(), Kviz.class);
         quizList.setAdapter(listAdapter);
     }
