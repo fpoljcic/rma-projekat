@@ -1,21 +1,30 @@
 package ba.unsa.etf.rma.aktivnosti;
 
+import android.content.Intent;
+import android.graphics.Color;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 
-import ba.unsa.etf.rma.R;
+import com.maltaisn.icondialog.Icon;
+import com.maltaisn.icondialog.IconDialog;
 
-public class DodajKategorijuAkt extends AppCompatActivity {
+import ba.unsa.etf.rma.R;
+import ba.unsa.etf.rma.klase.Kategorija;
+
+public class DodajKategorijuAkt extends AppCompatActivity implements IconDialog.Callback {
     private EditText categoryNameField, categoryIconField;
     private Button addIconBtn, addCategoryBtn;
+    private Icon[] selectedIcons;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_dodaj_kategoriju);
         linkControls();
+        setListeners();
     }
 
     private void linkControls() {
@@ -23,5 +32,45 @@ public class DodajKategorijuAkt extends AppCompatActivity {
         categoryIconField = findViewById(R.id.etIkona);
         addIconBtn = findViewById(R.id.btnDodajIkonu);
         addCategoryBtn = findViewById(R.id.btnDodajKategoriju);
+    }
+
+    private void setListeners() {
+        addIconBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                IconDialog iconDialog = new IconDialog();
+                iconDialog.setSelectedIcons(selectedIcons);
+                iconDialog.setMaxSelection(1, false);
+                iconDialog.show(getSupportFragmentManager(), "icon_dialog");
+            }
+        });
+        addCategoryBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                boolean errorPresent = false;
+                if (categoryNameField.getText().toString().isEmpty()) {
+                    errorPresent = true;
+                    categoryNameField.setBackgroundColor(Color.RED);
+                } else
+                    categoryNameField.setBackgroundColor(Color.WHITE);
+                if (categoryIconField.getText().toString().isEmpty()) {
+                    errorPresent = true;
+                    categoryIconField.setBackgroundColor(Color.RED);
+                } else
+                    categoryIconField.setBackgroundColor(Color.WHITE);
+                if (!errorPresent) {
+                    Intent myIntent = new Intent(DodajKategorijuAkt.this, DodajKvizAkt.class);
+                    myIntent.putExtra("novaKategorija", new Kategorija(categoryNameField.getText().toString(), categoryIconField.getText().toString()));
+                    DodajKategorijuAkt.this.startActivity(myIntent);
+                    finish();
+                }
+            }
+        });
+    }
+
+    @Override
+    public void onIconDialogIconsSelected(Icon[] icons) {
+        selectedIcons = icons;
+        categoryIconField.setText(String.valueOf(selectedIcons[0].getId()));
     }
 }

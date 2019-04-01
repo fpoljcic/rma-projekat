@@ -1,10 +1,11 @@
 package ba.unsa.etf.rma.klase;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Objects;
 
-public class Kviz {
+public class Kviz implements Serializable {
     private String naziv;
     private ArrayList<Pitanje> pitanja;
     private Kategorija kategorija;
@@ -47,9 +48,6 @@ public class Kviz {
         pitanja.add(pitanje);
     }
 
-    public String getImage() {
-        return "standard";
-    }
 
     @Override
     public boolean equals(Object o) {

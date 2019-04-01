@@ -49,4 +49,8 @@ public class Kategorija implements Serializable {
     public int hashCode() {
         return Objects.hash(naziv, id);
     }
+
+    public String getImage() {
+        return naziv.toLowerCase().replaceAll(" ", "_");
+    }
 }

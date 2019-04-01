@@ -81,7 +81,7 @@ public class ListAdapter extends BaseAdapter implements View.OnClickListener {
                     holder.icon.setImageResource(res.getIdentifier("ba.unsa.etf.rma:drawable/add", null, null));
                 } else {
                     holder.name.setText(object.getNaziv());
-                    holder.icon.setImageResource(res.getIdentifier("ba.unsa.etf.rma:drawable/" + object.getImage(), null, null));
+                    holder.icon.setImageResource(res.getIdentifier("ba.unsa.etf.rma:drawable/" + object.getKategorija().getImage(), null, null));
                 }
             } else if (classType == Pitanje.class) {
                 Pitanje object = (Pitanje) data.get(position);
