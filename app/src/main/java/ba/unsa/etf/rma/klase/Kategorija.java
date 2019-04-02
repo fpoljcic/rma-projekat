@@ -41,13 +41,12 @@ public class Kategorija implements Serializable {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Kategorija that = (Kategorija) o;
-        return Objects.equals(naziv, that.naziv) &&
-                Objects.equals(id, that.id);
+        return Objects.equals(naziv, that.naziv);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(naziv, id);
+        return Objects.hash(naziv);
     }
 
     public String getImage() {

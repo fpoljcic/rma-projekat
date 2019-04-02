@@ -3,6 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:gravity="center_horizontal"
     android:orientation="vertical"
     android:padding="10dp"
     tools:context=".aktivnosti.DodajKvizAkt">
@@ -17,6 +18,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:ems="10"
+        android:hint="@string/naziv_kviza"
         android:inputType="textPersonName"
         android:paddingTop="5dp" />
 
@@ -25,7 +27,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:paddingTop="10dp"
-        android:text="Pitanja u kvizu"
+        android:text="@string/pitanja_u_kvizu"
         android:textAlignment="center"
         android:textColor="@color/colorPrimaryDark"
         android:textSize="18sp" />
@@ -33,14 +35,14 @@
     <ListView
         android:id="@+id/lvDodanaPitanja"
         android:layout_width="match_parent"
-        android:layout_height="127dp" />
+        android:layout_height="128dp" />
 
     <TextView
         android:id="@+id/textView3"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:paddingTop="10dp"
-        android:text="Moguca pitanja"
+        android:text="@string/moguca_pitanja"
         android:textAlignment="center"
         android:textColor="@android:color/holo_orange_dark"
         android:textSize="18sp" />
@@ -52,10 +54,10 @@
 
     <Button
         android:id="@+id/btnDodajKviz"
-        android:layout_width="353dp"
+        android:layout_width="226dp"
         android:layout_height="wrap_content"
         android:paddingTop="5dp"
-        android:text="Dodaj kviz"
+        android:text="@string/dodaj_kviz"
         android:textColor="@android:color/holo_blue_dark"
         android:textSize="18sp" />
 </LinearLayout>

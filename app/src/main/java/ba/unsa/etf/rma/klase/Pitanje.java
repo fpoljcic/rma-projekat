@@ -61,6 +61,8 @@ public class Pitanje implements Serializable {
 
     @Override
     public String toString() {
+        if (naziv == null)
+            return "Dodaj pitanje";
         return naziv;
     }
 

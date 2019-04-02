@@ -1,3 +1,17 @@
 <resources>
     <string name="app_name">RMA projekat</string>
+    <string name="naziv_kategorije">Naziv kategorije</string>
+    <string name="ikona">Ikona</string>
+    <string name="dodaj_ikonu">Dodaj ikonu</string>
+    <string name="spasi_kategoriju">Spasi kategoriju</string>
+    <string name="pitanja_u_kvizu">Pitanja u kvizu</string>
+    <string name="moguca_pitanja">Moguca pitanja</string>
+    <string name="dodaj_kviz">Dodaj kviz</string>
+    <string name="odgovori">Odgovori</string>
+    <string name="dodaj">Dodaj</string>
+    <string name="dodaj_tacan">Dodaj tacan</string>
+    <string name="spasi_pitanje">Spasi pitanje</string>
+    <string name="naziv_pitanja">Naziv pitanja</string>
+    <string name="odgovor">Odgovor</string>
+    <string name="naziv_kviza">Naziv kviza</string>
 </resources>

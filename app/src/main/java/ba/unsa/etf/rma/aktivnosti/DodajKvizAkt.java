@@ -16,7 +16,6 @@ import java.util.ArrayList;
 import ba.unsa.etf.rma.R;
 import ba.unsa.etf.rma.klase.Kategorija;
 import ba.unsa.etf.rma.klase.Kviz;
-import ba.unsa.etf.rma.klase.ListAdapter;
 import ba.unsa.etf.rma.klase.Pitanje;
 
 public class DodajKvizAkt extends AppCompatActivity {
@@ -24,7 +23,7 @@ public class DodajKvizAkt extends AppCompatActivity {
     private EditText quizName;
     private ListView questionsList, optionalQuestionsList;
     private Button button;
-    private ListAdapter listAdapter, optListAdapter;
+    private ArrayAdapter<Pitanje> listAdapter, optListAdapter;
     private ArrayList<Pitanje> pitanja = new ArrayList<>(), mogucaPitanja = new ArrayList<>();
     private ArrayList<Kategorija> kategorije = new ArrayList<>();
     private int pozicija = -1;
@@ -50,7 +49,7 @@ public class DodajKvizAkt extends AppCompatActivity {
                     Intent myIntent = new Intent(DodajKvizAkt.this, DodajPitanjeAkt.class);
                     DodajKvizAkt.this.startActivity(myIntent);
                 } else {
-                    mogucaPitanja.add(mogucaPitanja.size() - 1, pitanja.get(position));
+                    mogucaPitanja.add(pitanja.get(position));
                     pitanja.remove(position);
                     listAdapter.notifyDataSetChanged();
                     optListAdapter.notifyDataSetChanged();
@@ -122,12 +121,13 @@ public class DodajKvizAkt extends AppCompatActivity {
             kategorije.add(kategorija);
             return;
         }
-        pitanja.add(null);
-        listAdapter = new ListAdapter(this, pitanja, getResources(), Pitanje.class);
+        pitanja.add(new Pitanje());
+
+        listAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, pitanja);
         questionsList.setAdapter(listAdapter);
 
         mogucaPitanja = (ArrayList<Pitanje>) intent.getSerializableExtra("mogucaPitanja");
-        optListAdapter = new ListAdapter(this, mogucaPitanja, getResources(), Pitanje.class);
+        optListAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, mogucaPitanja);
         optionalQuestionsList.setAdapter(optListAdapter);
 
         int layoutID = android.R.layout.simple_list_item_1;
