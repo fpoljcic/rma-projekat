@@ -28,7 +28,7 @@ public class KvizoviAkt extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        napuni();
+        // napuni();
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         linkControls();
@@ -68,10 +68,10 @@ public class KvizoviAkt extends AppCompatActivity {
                     myIntent.putExtra("kviz", kviz);
                 }
                 ArrayList<Pitanje> mogucaPitanja = new ArrayList<>();
-                for (Kviz kviz : prikazaniKvizovi) {
+                for (Kviz kviz : kvizovi) {
                     if (kviz != null && kviz != prikazaniKvizovi.get(position)) {
                         for (Pitanje pitanje : kviz.getPitanja()) {
-                            if (!mogucaPitanja.contains(pitanje))
+                            if (!mogucaPitanja.contains(pitanje) && (prikazaniKvizovi.get(position) == null || !prikazaniKvizovi.get(position).getPitanja().contains(pitanje)))
                                 mogucaPitanja.add(pitanje);
                         }
                     }
@@ -102,6 +102,8 @@ public class KvizoviAkt extends AppCompatActivity {
             if (resultCode == RESULT_OK) {
                 Kviz kviz = (Kviz) data.getSerializableExtra("kviz");
                 int pozicija = data.getIntExtra("pozicija", -1);
+                if (kvizovi.contains(kviz) && kvizovi.indexOf(kviz) != pozicija)
+                    return;
                 ArrayList<Kategorija> noveKategorije = (ArrayList<Kategorija>) data.getSerializableExtra("noveKategorije");
                 kategorije.addAll(noveKategorije);
                 categoryAdapter.notifyDataSetChanged();
@@ -118,7 +120,7 @@ public class KvizoviAkt extends AppCompatActivity {
                     kvizovi.get(pos).setNaziv(kviz.getNaziv());
                     kvizovi.get(pos).setPitanja(kviz.getPitanja());
                     kvizovi.get(pos).setKategorija(kviz.getKategorija());
-                    if (!postojeciKviz.getKategorija().equals(categorySpinner.getSelectedItem()))
+                    if (!((Kategorija) categorySpinner.getSelectedItem()).getNaziv().equals("Svi") && !postojeciKviz.getKategorija().equals(categorySpinner.getSelectedItem()))
                         prikazaniKvizovi.remove(postojeciKviz);
                 }
                 listAdapter.notifyDataSetChanged();
@@ -144,6 +146,7 @@ public class KvizoviAkt extends AppCompatActivity {
 
     private void linkControls() {
         prikazaniKvizovi.add(null);
+        kategorije.add(new Kategorija("Svi", "0"));
         categorySpinner = findViewById(R.id.spPostojeceKategorije);
         int layoutID = android.R.layout.simple_list_item_1;
         categoryAdapter = new ArrayAdapter<>(this, layoutID, kategorije);

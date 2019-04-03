@@ -95,11 +95,18 @@ public class DodajPitanjeAkt extends AppCompatActivity {
         addQuestionBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (questionField.getText().toString().isEmpty())
-                    questionField.setBackgroundColor(Color.RED);
-                else if (tacanOdgovor == null)
-                    answerField.setBackgroundColor(Color.RED);
-                else {
+                boolean errorPresent = false;
+                if (questionField.getText().toString().isEmpty()) {
+                    errorPresent = true;
+                    questionField.setBackgroundColor(Color.parseColor("#FFCCCC"));
+                } else
+                    questionField.setBackgroundColor(Color.parseColor("#FAFAFA"));
+                if (tacanOdgovor == null) {
+                    errorPresent = true;
+                    answerField.setBackgroundColor(Color.parseColor("#FFCCCC"));
+                } else
+                    answerField.setBackgroundColor(Color.parseColor("#FAFAFA"));
+                if (!errorPresent) {
                     Intent replyIntent = new Intent();
                     replyIntent.putExtra("pitanje", questionField.getText().toString());
                     replyIntent.putExtra("odgovori", odgovori);

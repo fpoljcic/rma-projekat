@@ -11,12 +11,15 @@ import android.widget.EditText;
 import com.maltaisn.icondialog.Icon;
 import com.maltaisn.icondialog.IconDialog;
 
+import java.util.ArrayList;
+
 import ba.unsa.etf.rma.R;
 import ba.unsa.etf.rma.klase.Kategorija;
 
 public class DodajKategorijuAkt extends AppCompatActivity implements IconDialog.Callback {
     private EditText categoryNameField, categoryIconField;
     private Button addIconBtn, addCategoryBtn;
+    private ArrayList<Kategorija> kategorije;
     private Icon[] selectedIcons;
 
     @Override
@@ -25,6 +28,12 @@ public class DodajKategorijuAkt extends AppCompatActivity implements IconDialog.
         setContentView(R.layout.activity_dodaj_kategoriju);
         linkControls();
         setListeners();
+        getIntentData();
+    }
+
+    private void getIntentData() {
+        Intent intent = getIntent();
+        kategorije = (ArrayList<Kategorija>) intent.getSerializableExtra("kategorije");
     }
 
     private void linkControls() {
@@ -48,16 +57,16 @@ public class DodajKategorijuAkt extends AppCompatActivity implements IconDialog.
             @Override
             public void onClick(View view) {
                 boolean errorPresent = false;
-                if (categoryNameField.getText().toString().isEmpty()) {
+                if (categoryNameField.getText().toString().isEmpty() || kategorije.contains(new Kategorija(categoryNameField.getText().toString(), "0"))) {
                     errorPresent = true;
-                    categoryNameField.setBackgroundColor(Color.RED);
+                    categoryNameField.setBackgroundColor(Color.parseColor("#FFCCCC"));
                 } else
-                    categoryNameField.setBackgroundColor(Color.WHITE);
+                    categoryNameField.setBackgroundColor(Color.parseColor("#FAFAFA"));
                 if (categoryIconField.getText().toString().isEmpty()) {
                     errorPresent = true;
-                    categoryIconField.setBackgroundColor(Color.RED);
+                    categoryIconField.setBackgroundColor(Color.parseColor("#FFCCCC"));
                 } else
-                    categoryIconField.setBackgroundColor(Color.WHITE);
+                    categoryIconField.setBackgroundColor(Color.parseColor("#FAFAFA"));
                 if (!errorPresent) {
                     Intent replyIntent = new Intent();
                     replyIntent.putExtra("novaKategorija", new Kategorija(categoryNameField.getText().toString(), categoryIconField.getText().toString()));

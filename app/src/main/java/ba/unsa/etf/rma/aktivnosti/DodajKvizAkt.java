@@ -1,6 +1,7 @@
 package ba.unsa.etf.rma.aktivnosti;
 
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
@@ -71,6 +72,10 @@ public class DodajKvizAkt extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 // Dodaj kviz
+                if (quizName.getText().toString().isEmpty()) {
+                    quizName.setBackgroundColor(Color.parseColor("#FFCCCC"));
+                    return;
+                }
                 kviz.setKategorija((Kategorija) categorySpinner.getSelectedItem());
                 kviz.setNaziv(quizName.getText().toString());
                 pitanja.remove(pitanja.size() - 1);
@@ -90,6 +95,7 @@ public class DodajKvizAkt extends AppCompatActivity {
                 Kategorija kategorija = kategorije.get(position);
                 if (kategorija == dodajKategoriju) {
                     Intent myIntent = new Intent(DodajKvizAkt.this, DodajKategorijuAkt.class);
+                    myIntent.putExtra("kategorije", kategorije);
                     categorySpinner.setSelection(0);
                     DodajKvizAkt.this.startActivityForResult(myIntent, 2);
                 }
@@ -111,6 +117,7 @@ public class DodajKvizAkt extends AppCompatActivity {
                 Kategorija kategorija = (Kategorija) data.getSerializableExtra("novaKategorija");
                 kategorije.add(kategorije.size() - 1, kategorija);
                 noveKategorije.add(kategorija);
+                categorySpinner.setSelection(kategorije.size() - 2);
                 categoryAdapter.notifyDataSetChanged();
             }
         }
@@ -121,6 +128,8 @@ public class DodajKvizAkt extends AppCompatActivity {
                 ArrayList<String> odgovori = (ArrayList<String>) data.getSerializableExtra("odgovori");
                 String tacanOdgovor = data.getStringExtra("tacanOdgovor");
                 Pitanje pitanje = new Pitanje(naziv, naziv, odgovori, tacanOdgovor);
+                if (pitanja.contains(pitanje))
+                    return;
                 pitanja.add(pitanja.size() - 1, pitanje);
                 listAdapter.notifyDataSetChanged();
             }
@@ -144,12 +153,6 @@ public class DodajKvizAkt extends AppCompatActivity {
             pozicija = intent.getIntExtra("pozicija", -1);
             quizName.setText(kviz.getNaziv());
             pitanja = kviz.getPitanja();
-        }
-        Kategorija kategorija = (Kategorija) intent.getSerializableExtra("novaKategorija");
-        if (kategorija != null) {
-            // Dodavanje kategorije
-            kategorije.add(kategorija);
-            return;
         }
         pitanja.add(new Pitanje());
 

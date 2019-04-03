@@ -66,23 +66,16 @@ public class Pitanje implements Serializable {
         return naziv;
     }
 
-    public String getImage() {
-        return "standard";
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Pitanje pitanje = (Pitanje) o;
-        return Objects.equals(naziv, pitanje.naziv) &&
-                Objects.equals(tekstPitanja, pitanje.tekstPitanja) &&
-                Objects.equals(odgovori, pitanje.odgovori) &&
-                Objects.equals(tacan, pitanje.tacan);
+        return Objects.equals(naziv, pitanje.naziv);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(naziv, tekstPitanja, odgovori, tacan);
+        return Objects.hash(naziv);
     }
 }
