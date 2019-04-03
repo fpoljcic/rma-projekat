@@ -1,5 +1,6 @@
 package ba.unsa.etf.rma.aktivnosti;
 
+import android.content.Intent;
 import android.graphics.Color;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -94,7 +95,18 @@ public class DodajPitanjeAkt extends AppCompatActivity {
         addQuestionBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
+                if (questionField.getText().toString().isEmpty())
+                    questionField.setBackgroundColor(Color.RED);
+                else if (tacanOdgovor == null)
+                    answerField.setBackgroundColor(Color.RED);
+                else {
+                    Intent replyIntent = new Intent();
+                    replyIntent.putExtra("pitanje", questionField.getText().toString());
+                    replyIntent.putExtra("odgovori", odgovori);
+                    replyIntent.putExtra("tacanOdgovor", tacanOdgovor);
+                    setResult(RESULT_OK, replyIntent);
+                    finish();
+                }
             }
         });
     }

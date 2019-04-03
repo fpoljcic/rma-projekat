@@ -24,8 +24,10 @@ public class DodajKvizAkt extends AppCompatActivity {
     private ListView questionsList, optionalQuestionsList;
     private Button button;
     private ArrayAdapter<Pitanje> listAdapter, optListAdapter;
+    private ArrayAdapter<Kategorija> categoryAdapter;
     private ArrayList<Pitanje> pitanja = new ArrayList<>(), mogucaPitanja = new ArrayList<>();
     private ArrayList<Kategorija> kategorije = new ArrayList<>();
+    private ArrayList<Kategorija> noveKategorije = new ArrayList<>();
     private int pozicija = -1;
     private Kviz kviz;
     private Kategorija dodajKategoriju;
@@ -47,7 +49,7 @@ public class DodajKvizAkt extends AppCompatActivity {
                 if (position == pitanja.size() - 1) {
                     // Dodaj pitanje
                     Intent myIntent = new Intent(DodajKvizAkt.this, DodajPitanjeAkt.class);
-                    DodajKvizAkt.this.startActivity(myIntent);
+                    DodajKvizAkt.this.startActivityForResult(myIntent, 3);
                 } else {
                     mogucaPitanja.add(pitanja.get(position));
                     pitanja.remove(position);
@@ -73,10 +75,13 @@ public class DodajKvizAkt extends AppCompatActivity {
                 kviz.setNaziv(quizName.getText().toString());
                 pitanja.remove(pitanja.size() - 1);
                 kviz.setPitanja(pitanja);
-                Intent myIntent = new Intent(DodajKvizAkt.this, KvizoviAkt.class);
-                myIntent.putExtra("pozicija", pozicija);
-                myIntent.putExtra("kviz", kviz);
-                DodajKvizAkt.this.startActivity(myIntent);
+                Intent replyIntent = new Intent();
+                replyIntent.putExtra("pozicija", pozicija);
+                replyIntent.putExtra("kviz", kviz);
+                kategorije.remove(kategorije.size() - 1);
+                replyIntent.putExtra("noveKategorije", noveKategorije);
+                setResult(RESULT_OK, replyIntent);
+                finish();
             }
         });
         categorySpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
@@ -86,7 +91,7 @@ public class DodajKvizAkt extends AppCompatActivity {
                 if (kategorija == dodajKategoriju) {
                     Intent myIntent = new Intent(DodajKvizAkt.this, DodajKategorijuAkt.class);
                     categorySpinner.setSelection(0);
-                    DodajKvizAkt.this.startActivity(myIntent);
+                    DodajKvizAkt.this.startActivityForResult(myIntent, 2);
                 }
             }
 
@@ -95,6 +100,31 @@ public class DodajKvizAkt extends AppCompatActivity {
                 // Do nothing?
             }
         });
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == 2) {
+            // Dodaj kategoriju
+            if (resultCode == RESULT_OK) {
+                Kategorija kategorija = (Kategorija) data.getSerializableExtra("novaKategorija");
+                kategorije.add(kategorije.size() - 1, kategorija);
+                noveKategorije.add(kategorija);
+                categoryAdapter.notifyDataSetChanged();
+            }
+        }
+        if (requestCode == 3) {
+            // Dodaj pitanje
+            if (resultCode == RESULT_OK) {
+                String naziv = data.getStringExtra("pitanje");
+                ArrayList<String> odgovori = (ArrayList<String>) data.getSerializableExtra("odgovori");
+                String tacanOdgovor = data.getStringExtra("tacanOdgovor");
+                Pitanje pitanje = new Pitanje(naziv, naziv, odgovori, tacanOdgovor);
+                pitanja.add(pitanja.size() - 1, pitanje);
+                listAdapter.notifyDataSetChanged();
+            }
+        }
     }
 
     private void linkControls() {
@@ -135,8 +165,8 @@ public class DodajKvizAkt extends AppCompatActivity {
         kategorije.remove(0);
         kategorije.add(dodajKategoriju);
         int poz = kategorije.indexOf(kviz.getKategorija());
-        ArrayAdapter<Kategorija> adapterKat = new ArrayAdapter<>(this, layoutID, kategorije);
-        categorySpinner.setAdapter(adapterKat);
+        categoryAdapter = new ArrayAdapter<>(this, layoutID, kategorije);
+        categorySpinner.setAdapter(categoryAdapter);
         categorySpinner.setSelection(poz);
     }
 }

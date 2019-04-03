@@ -11,6 +11,9 @@ import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.maltaisn.icondialog.Icon;
+import com.maltaisn.icondialog.IconHelper;
+
 import java.util.ArrayList;
 
 import ba.unsa.etf.rma.R;
@@ -20,22 +23,12 @@ public class ListAdapter extends BaseAdapter implements View.OnClickListener {
     private ArrayList data;
     private static LayoutInflater inflater = null;
     public Resources res;
-    private Class classType;
 
-    public ListAdapter(Activity a, ArrayList d, Resources resLocal, Class classType) {
+    public ListAdapter(Activity a, ArrayList d, Resources resLocal) {
         activity = a;
         data = d;
         res = resLocal;
         inflater = (LayoutInflater) activity.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        this.classType = classType;
-    }
-
-    public Class getClassType() {
-        return classType;
-    }
-
-    public void setClassType(Class classType) {
-        this.classType = classType;
     }
 
     public int getCount() {
@@ -59,7 +52,7 @@ public class ListAdapter extends BaseAdapter implements View.OnClickListener {
 
     public View getView(int position, View convertView, ViewGroup parent) {
         View vi = convertView;
-        ViewHolder holder;
+        final ViewHolder holder;
 
         if (convertView == null) {
             vi = inflater.inflate(R.layout.element_liste, null);
@@ -71,28 +64,24 @@ public class ListAdapter extends BaseAdapter implements View.OnClickListener {
         } else
             holder = (ViewHolder) vi.getTag();
 
-        if (data.size() <= 0) {
-            holder.name.setText("No Data");
+        final Kviz object = (Kviz) data.get(position);
+        if (object == null) {
+            holder.name.setText(R.string.dodaj_kviz);
+            holder.icon.setImageResource(res.getIdentifier("ba.unsa.etf.rma:drawable/add", null, null));
         } else {
-            if (classType == Kviz.class) {
-                Kviz object = (Kviz) data.get(position);
-                if (object == null) {
-                    holder.name.setText("Dodaj Kviz");
-                    holder.icon.setImageResource(res.getIdentifier("ba.unsa.etf.rma:drawable/add", null, null));
-                } else {
-                    holder.name.setText(object.getNaziv());
-                    holder.icon.setImageResource(res.getIdentifier("ba.unsa.etf.rma:drawable/" + object.getKategorija().getImage(), null, null));
+            holder.name.setText(object.getNaziv());
+            final Context context = this.activity;
+            final IconHelper iconHelper = IconHelper.getInstance(context);
+            iconHelper.addLoadCallback(new IconHelper.LoadCallback() {
+                @Override
+                public void onDataLoaded() {
+                    // This happens on UI thread, and is guaranteed to be called.
+                    String id = object.getKategorija().getId();
+                    Icon icon = iconHelper.getIcon(Integer.valueOf(id));
+                    holder.icon.setImageDrawable(icon.getDrawable(context));
                 }
-            } else if (classType == Pitanje.class) {
-                Pitanje object = (Pitanje) data.get(position);
-                if (object == null) {
-                    holder.name.setText("Dodaj Pitanje");
-                    holder.icon.setImageResource(res.getIdentifier("ba.unsa.etf.rma:drawable/add", null, null));
-                } else {
-                    holder.name.setText(object.getNaziv());
-                    holder.icon.setImageResource(res.getIdentifier("ba.unsa.etf.rma:drawable/" + object.getImage(), null, null));
-                }
-            }
+            });
+
         }
         return vi;
     }

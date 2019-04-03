@@ -59,9 +59,9 @@ public class DodajKategorijuAkt extends AppCompatActivity implements IconDialog.
                 } else
                     categoryIconField.setBackgroundColor(Color.WHITE);
                 if (!errorPresent) {
-                    Intent myIntent = new Intent(DodajKategorijuAkt.this, DodajKvizAkt.class);
-                    myIntent.putExtra("novaKategorija", new Kategorija(categoryNameField.getText().toString(), categoryIconField.getText().toString()));
-                    DodajKategorijuAkt.this.startActivity(myIntent);
+                    Intent replyIntent = new Intent();
+                    replyIntent.putExtra("novaKategorija", new Kategorija(categoryNameField.getText().toString(), categoryIconField.getText().toString()));
+                    setResult(RESULT_OK, replyIntent);
                     finish();
                 }
             }
