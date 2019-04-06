@@ -67,18 +67,8 @@ public class KvizoviAkt extends AppCompatActivity {
                     kviz.setKategorija((Kategorija) categorySpinner.getSelectedItem());
                     myIntent.putExtra("kviz", kviz);
                 }
-                ArrayList<Pitanje> mogucaPitanja = new ArrayList<>();
-                for (Kviz kviz : kvizovi) {
-                    if (kviz != null && kviz != prikazaniKvizovi.get(position)) {
-                        for (Pitanje pitanje : kviz.getPitanja()) {
-                            if (!mogucaPitanja.contains(pitanje) && (prikazaniKvizovi.get(position) == null || !prikazaniKvizovi.get(position).getPitanja().contains(pitanje)))
-                                mogucaPitanja.add(pitanje);
-                        }
-                    }
-                }
-                myIntent.putExtra("mogucaPitanja", mogucaPitanja);
                 myIntent.putExtra("kategorija", kategorije);
-                KvizoviAkt.this.startActivityForResult(myIntent, 1);
+                startActivityForResult(myIntent, 1);
             }
         });
         categorySpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
@@ -109,7 +99,7 @@ public class KvizoviAkt extends AppCompatActivity {
                 categoryAdapter.notifyDataSetChanged();
                 if (pozicija == -1) {
                     kvizovi.add(kviz);
-                    if (((Kategorija) categorySpinner.getSelectedItem()).getNaziv().equals("Svi") || kviz.getKategorija().equals(categorySpinner.getSelectedItem()))
+                    if (((Kategorija) categorySpinner.getSelectedItem()).getNaziv().equals("Svi") || (kviz.getKategorija() != null && kviz.getKategorija().equals(categorySpinner.getSelectedItem())))
                         prikazaniKvizovi.add(prikazaniKvizovi.size() - 1, kviz);
                 } else {
                     Kviz postojeciKviz = prikazaniKvizovi.get(pozicija);
@@ -120,10 +110,16 @@ public class KvizoviAkt extends AppCompatActivity {
                     kvizovi.get(pos).setNaziv(kviz.getNaziv());
                     kvizovi.get(pos).setPitanja(kviz.getPitanja());
                     kvizovi.get(pos).setKategorija(kviz.getKategorija());
-                    if (!((Kategorija) categorySpinner.getSelectedItem()).getNaziv().equals("Svi") && !postojeciKviz.getKategorija().equals(categorySpinner.getSelectedItem()))
+                    if (!((Kategorija) categorySpinner.getSelectedItem()).getNaziv().equals("Svi") && (postojeciKviz.getKategorija() == null || !postojeciKviz.getKategorija().equals(categorySpinner.getSelectedItem())))
                         prikazaniKvizovi.remove(postojeciKviz);
                 }
                 listAdapter.notifyDataSetChanged();
+            } else if (resultCode == 0) {
+                // Pritisnuto back dugme
+
+                ArrayList<Kategorija> noveKategorije = (ArrayList<Kategorija>) data.getSerializableExtra("noveKategorije");
+                kategorije.addAll(noveKategorije);
+                categoryAdapter.notifyDataSetChanged();
             }
         }
     }
@@ -135,7 +131,7 @@ public class KvizoviAkt extends AppCompatActivity {
             prikazaniKvizovi.add(null);
         } else {
             for (Kviz kviz : kvizovi) {
-                if (kviz.getKategorija().equals(kategorija))
+                if (kviz.getKategorija() != null && kviz.getKategorija().equals(kategorija))
                     prikazaniKvizovi.add(kviz);
             }
             prikazaniKvizovi.add(null);

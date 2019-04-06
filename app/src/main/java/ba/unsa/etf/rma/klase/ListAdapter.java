@@ -76,9 +76,13 @@ public class ListAdapter extends BaseAdapter implements View.OnClickListener {
                 @Override
                 public void onDataLoaded() {
                     // This happens on UI thread, and is guaranteed to be called.
-                    String id = object.getKategorija().getId();
-                    Icon icon = iconHelper.getIcon(Integer.valueOf(id));
-                    holder.icon.setImageDrawable(icon.getDrawable(context));
+                    if (object.getKategorija() == null)
+                        holder.icon.setImageResource(res.getIdentifier("ba.unsa.etf.rma:drawable/generic", null, null));
+                    else {
+                        String id = object.getKategorija().getId();
+                        Icon icon = iconHelper.getIcon(Integer.valueOf(id));
+                        holder.icon.setImageDrawable(icon.getDrawable(context));
+                    }
                 }
             });
 
