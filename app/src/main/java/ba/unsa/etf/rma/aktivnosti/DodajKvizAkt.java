@@ -1,7 +1,6 @@
 package ba.unsa.etf.rma.aktivnosti;
 
 import android.content.Intent;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
@@ -73,7 +72,7 @@ public class DodajKvizAkt extends AppCompatActivity {
             public void onClick(View v) {
                 // Dodaj kviz
                 if (quizName.getText().toString().isEmpty()) {
-                    quizName.setBackgroundColor(Color.parseColor("#FFCCCC"));
+                    quizName.setBackgroundResource(R.color.colorError);
                     return;
                 }
                 if (((Kategorija) categorySpinner.getSelectedItem()).getNaziv().equals("Svi"))
@@ -174,5 +173,12 @@ public class DodajKvizAkt extends AppCompatActivity {
         categorySpinner.setSelection(poz);
     }
 
-
+    @Override
+    public void onBackPressed() {
+        //super.onBackPressed();
+        Intent backIntent = new Intent();
+        backIntent.putExtra("noveKategorije", noveKategorije);
+        setResult(RESULT_CANCELED, backIntent);
+        finish();
+    }
 }

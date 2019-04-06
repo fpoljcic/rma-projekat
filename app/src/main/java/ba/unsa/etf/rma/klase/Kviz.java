@@ -54,12 +54,11 @@ public class Kviz implements Serializable {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Kviz kviz = (Kviz) o;
-        return Objects.equals(naziv, kviz.naziv) &&
-                Objects.equals(kategorija, kviz.kategorija);
+        return Objects.equals(naziv, kviz.naziv);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(naziv, kategorija);
+        return Objects.hash(naziv);
     }
 }

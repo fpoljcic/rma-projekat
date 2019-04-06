@@ -4,17 +4,17 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:padding="10dp"
+    android:padding="15dp"
     tools:context=".aktivnosti.DodajKategorijuAkt">
 
     <EditText
         android:id="@+id/etNaziv"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
         android:ems="10"
         android:hint="@string/naziv_kategorije"
-        android:inputType="textPersonName"
-        android:paddingTop="15dp" />
+        android:inputType="textPersonName" />
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -25,20 +25,21 @@
             android:id="@+id/etIkona"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
             android:ems="10"
             android:enabled="false"
             android:hint="@string/ikona"
             android:inputType="none"
-            android:paddingTop="5dp"
             tools:editable="false" />
 
         <Button
             android:id="@+id/btnDodajIkonu"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:paddingTop="5dp"
+            android:layout_marginTop="5dp"
+            android:backgroundTint="@android:color/holo_blue_dark"
             android:text="@string/dodaj_ikonu"
-            android:textColor="@android:color/holo_blue_dark"
+            android:textColor="@android:color/background_light"
             android:textSize="14sp" />
     </LinearLayout>
 
@@ -46,8 +47,8 @@
         android:id="@+id/btnDodajKategoriju"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginTop="5dp"
         android:backgroundTint="@android:color/holo_blue_dark"
-        android:paddingTop="10dp"
         android:text="@string/spasi_kategoriju"
         android:textColor="@android:color/background_light"
         android:textSize="18sp" />

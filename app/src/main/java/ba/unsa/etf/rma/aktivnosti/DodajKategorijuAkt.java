@@ -1,7 +1,6 @@
 package ba.unsa.etf.rma.aktivnosti;
 
 import android.content.Intent;
-import android.graphics.Color;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -59,14 +58,14 @@ public class DodajKategorijuAkt extends AppCompatActivity implements IconDialog.
                 boolean errorPresent = false;
                 if (categoryNameField.getText().toString().isEmpty() || kategorije.contains(new Kategorija(categoryNameField.getText().toString(), "0"))) {
                     errorPresent = true;
-                    categoryNameField.setBackgroundColor(Color.parseColor("#FFCCCC"));
+                    categoryNameField.setBackgroundResource(R.color.colorError);
                 } else
-                    categoryNameField.setBackgroundColor(Color.parseColor("#FAFAFA"));
+                    categoryNameField.setBackgroundResource(R.color.colorDefaultBackground);
                 if (categoryIconField.getText().toString().isEmpty()) {
                     errorPresent = true;
-                    categoryIconField.setBackgroundColor(Color.parseColor("#FFCCCC"));
+                    categoryIconField.setBackgroundResource(R.color.colorError);
                 } else
-                    categoryIconField.setBackgroundColor(Color.parseColor("#FAFAFA"));
+                    categoryIconField.setBackgroundResource(R.color.colorDefaultBackground);
                 if (!errorPresent) {
                     Intent replyIntent = new Intent();
                     replyIntent.putExtra("novaKategorija", new Kategorija(categoryNameField.getText().toString(), categoryIconField.getText().toString()));

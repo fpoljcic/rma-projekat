@@ -1,7 +1,6 @@
 package ba.unsa.etf.rma.aktivnosti;
 
 import android.content.Intent;
-import android.graphics.Color;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -52,9 +51,9 @@ public class DodajPitanjeAkt extends AppCompatActivity {
                 View view = super.getView(position, convertView, parent);
                 TextView text = view.findViewById(android.R.id.text1);
                 if (odgovori.get(position).equals(tacanOdgovor))
-                    text.setTextColor(Color.GREEN);
+                    text.setBackgroundResource(R.color.colorRight);
                 else
-                    text.setTextColor(Color.BLACK);
+                    text.setBackgroundResource(R.color.colorDefaultBackground);
                 return view;
             }
         };
@@ -65,8 +64,11 @@ public class DodajPitanjeAkt extends AppCompatActivity {
         answersList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
-                if (odgovori.get(position).equals(tacanOdgovor))
+                if (odgovori.get(position).equals(tacanOdgovor)) {
                     tacanOdgovor = null;
+                    addRightAnswerBtn.setEnabled(true);
+                    addRightAnswerBtn.setClickable(true);
+                }
                 odgovori.remove(odgovori.get(position));
                 adapter.notifyDataSetChanged();
             }
@@ -74,22 +76,28 @@ public class DodajPitanjeAkt extends AppCompatActivity {
         addAnswerBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (!answerField.getText().toString().isEmpty()) {
+                if (!answerField.getText().toString().isEmpty() && !odgovori.contains(answerField.getText().toString())) {
                     odgovori.add(answerField.getText().toString());
                     answerField.getText().clear();
+                    answerField.setBackgroundResource(R.color.colorDefaultBackground);
                     adapter.notifyDataSetChanged();
-                }
+                } else
+                    answerField.setBackgroundResource(R.color.colorError);
             }
         });
         addRightAnswerBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (tacanOdgovor == null && !answerField.getText().toString().isEmpty()) {
+                if (!answerField.getText().toString().isEmpty() && !odgovori.contains(answerField.getText().toString())) {
                     odgovori.add(answerField.getText().toString());
                     tacanOdgovor = answerField.getText().toString();
                     answerField.getText().clear();
+                    addRightAnswerBtn.setEnabled(false);
+                    addRightAnswerBtn.setClickable(false);
+                    answerField.setBackgroundResource(R.color.colorDefaultBackground);
                     adapter.notifyDataSetChanged();
-                }
+                } else
+                    answerField.setBackgroundResource(R.color.colorError);
             }
         });
         addQuestionBtn.setOnClickListener(new View.OnClickListener() {
@@ -98,14 +106,14 @@ public class DodajPitanjeAkt extends AppCompatActivity {
                 boolean errorPresent = false;
                 if (questionField.getText().toString().isEmpty()) {
                     errorPresent = true;
-                    questionField.setBackgroundColor(Color.parseColor("#FFCCCC"));
+                    questionField.setBackgroundResource(R.color.colorError);
                 } else
-                    questionField.setBackgroundColor(Color.parseColor("#FAFAFA"));
+                    questionField.setBackgroundResource(R.color.colorDefaultBackground);
                 if (tacanOdgovor == null) {
                     errorPresent = true;
-                    answerField.setBackgroundColor(Color.parseColor("#FFCCCC"));
+                    answerField.setBackgroundResource(R.color.colorError);
                 } else
-                    answerField.setBackgroundColor(Color.parseColor("#FAFAFA"));
+                    answerField.setBackgroundResource(R.color.colorDefaultBackground);
                 if (!errorPresent) {
                     Intent replyIntent = new Intent();
                     replyIntent.putExtra("pitanje", questionField.getText().toString());

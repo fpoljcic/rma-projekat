@@ -15,7 +15,6 @@ import ba.unsa.etf.rma.R;
 import ba.unsa.etf.rma.klase.Kategorija;
 import ba.unsa.etf.rma.klase.Kviz;
 import ba.unsa.etf.rma.klase.ListAdapter;
-import ba.unsa.etf.rma.klase.Pitanje;
 
 public class KvizoviAkt extends AppCompatActivity {
     private Spinner categorySpinner;
@@ -28,30 +27,11 @@ public class KvizoviAkt extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        // napuni();
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         linkControls();
         filterByCategory(kategorije.get(0));
         setListeners();
-    }
-
-
-    private void napuni() {
-        ArrayList<Pitanje> pitanja = new ArrayList<>();
-        ArrayList<Pitanje> pitanja2 = new ArrayList<>();
-        ArrayList<String> odgovori = new ArrayList<>();
-        odgovori.add("3");
-        odgovori.add("1");
-        odgovori.add("8");
-        pitanja.add(new Pitanje("Pitanje 1 - Kviz 1", "Koliko je 5 + 3 ?", odgovori, "8"));
-        pitanja.add(new Pitanje("Pitanje 2 - Kviz 1", "Da li je nebo plavo ?", odgovori, "3"));
-        pitanja2.add(new Pitanje("Pitanje 1 - Kviz 2", "Sta ja radim ?", odgovori, "1"));
-        kategorije.add(new Kategorija("Svi", "0"));
-        kategorije.add(new Kategorija("Osnovna kategorija", "1"));
-        kategorije.add(new Kategorija("Pomocna kategorija", "2"));
-        kvizovi.add(0, new Kviz("Kviz 1", pitanja, kategorije.get(1)));
-        kvizovi.add(1, new Kviz("Kviz 2", pitanja2, kategorije.get(2)));
     }
 
     private void setListeners() {
@@ -72,7 +52,6 @@ public class KvizoviAkt extends AppCompatActivity {
             }
         });
         categorySpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 Kategorija kategorija = kategorije.get(position);
                 filterByCategory(kategorija);
@@ -114,9 +93,8 @@ public class KvizoviAkt extends AppCompatActivity {
                         prikazaniKvizovi.remove(postojeciKviz);
                 }
                 listAdapter.notifyDataSetChanged();
-            } else if (resultCode == 0) {
+            } else if (resultCode == RESULT_CANCELED) {
                 // Pritisnuto back dugme
-
                 ArrayList<Kategorija> noveKategorije = (ArrayList<Kategorija>) data.getSerializableExtra("noveKategorije");
                 kategorije.addAll(noveKategorije);
                 categoryAdapter.notifyDataSetChanged();

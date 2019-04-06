@@ -3,7 +3,6 @@ package ba.unsa.etf.rma.klase;
 import android.app.Activity;
 import android.content.Context;
 import android.content.res.Resources;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,7 +17,7 @@ import java.util.ArrayList;
 
 import ba.unsa.etf.rma.R;
 
-public class ListAdapter extends BaseAdapter implements View.OnClickListener {
+public class ListAdapter extends BaseAdapter {
     private Activity activity;
     private ArrayList data;
     private static LayoutInflater inflater = null;
@@ -51,18 +50,18 @@ public class ListAdapter extends BaseAdapter implements View.OnClickListener {
     }
 
     public View getView(int position, View convertView, ViewGroup parent) {
-        View vi = convertView;
+        View view = convertView;
         final ViewHolder holder;
 
         if (convertView == null) {
-            vi = inflater.inflate(R.layout.element_liste, null);
+            view = inflater.inflate(R.layout.element_liste, null);
             holder = new ViewHolder();
-            holder.name = vi.findViewById(R.id.name);
-            holder.icon = vi.findViewById(R.id.icon);
+            holder.name = view.findViewById(R.id.name);
+            holder.icon = view.findViewById(R.id.icon);
 
-            vi.setTag(holder);
+            view.setTag(holder);
         } else
-            holder = (ViewHolder) vi.getTag();
+            holder = (ViewHolder) view.getTag();
 
         final Kviz object = (Kviz) data.get(position);
         if (object == null) {
@@ -70,29 +69,25 @@ public class ListAdapter extends BaseAdapter implements View.OnClickListener {
             holder.icon.setImageResource(res.getIdentifier("ba.unsa.etf.rma:drawable/add", null, null));
         } else {
             holder.name.setText(object.getNaziv());
+            if (object.getKategorija() == null) {
+                holder.icon.setImageResource(res.getIdentifier("ba.unsa.etf.rma:drawable/generic", null, null));
+                return view;
+            }
             final Context context = this.activity;
             final IconHelper iconHelper = IconHelper.getInstance(context);
             iconHelper.addLoadCallback(new IconHelper.LoadCallback() {
                 @Override
                 public void onDataLoaded() {
                     // This happens on UI thread, and is guaranteed to be called.
-                    if (object.getKategorija() == null)
-                        holder.icon.setImageResource(res.getIdentifier("ba.unsa.etf.rma:drawable/generic", null, null));
-                    else {
-                        String id = object.getKategorija().getId();
-                        Icon icon = iconHelper.getIcon(Integer.valueOf(id));
-                        holder.icon.setImageDrawable(icon.getDrawable(context));
-                    }
+                    String id = object.getKategorija().getId();
+                    Icon icon = iconHelper.getIcon(Integer.valueOf(id));
+                    holder.icon.setImageDrawable(icon.getDrawable(context));
                 }
             });
 
         }
-        return vi;
+        return view;
     }
 
-    @Override
-    public void onClick(View v) {
-        Log.v("CustomAdapter", "=====Row button clicked=====");
-    }
 }
 
