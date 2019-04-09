@@ -14,4 +14,5 @@
     <string name="naziv_pitanja">Naziv pitanja</string>
     <string name="odgovor">Odgovor</string>
     <string name="naziv_kviza">Naziv kviza</string>
+    <string name="importuj_kviz">Importuj kviz</string>
 </resources>

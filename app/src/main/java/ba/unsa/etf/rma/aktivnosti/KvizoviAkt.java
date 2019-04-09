@@ -48,6 +48,7 @@ public class KvizoviAkt extends AppCompatActivity {
                     myIntent.putExtra("kviz", kviz);
                 }
                 myIntent.putExtra("kategorija", kategorije);
+                myIntent.putExtra("kvizovi", kvizovi);
                 startActivityForResult(myIntent, 1);
             }
         });
