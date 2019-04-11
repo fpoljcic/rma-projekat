@@ -6,4 +6,6 @@
     <color name="colorError">#FFCCCC</color>
     <color name="colorDefaultBackground">#FAFAFA</color>
     <color name="colorRight">#44B34C</color>
+    <color name="crvena">#FF3030</color>
+    <color name="zelena">#7FFF00</color>
 </resources>

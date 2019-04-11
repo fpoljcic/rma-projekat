@@ -107,7 +107,7 @@ public class DodajKvizAkt extends AppCompatActivity {
                 Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
                 intent.addCategory(Intent.CATEGORY_OPENABLE);
                 intent.setType("text/*");
-                startActivityForResult(intent, 42);
+                startActivityForResult(intent, 4);
 
             }
         });
@@ -133,86 +133,140 @@ public class DodajKvizAkt extends AppCompatActivity {
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == 2 && resultCode == RESULT_OK) {
-            // Dodaj kategoriju
-            Kategorija kategorija = (Kategorija) data.getSerializableExtra("novaKategorija");
-            kategorije.add(kategorije.size() - 1, kategorija);
-            noveKategorije.add(kategorija);
-            categorySpinner.setSelection(kategorije.size() - 2);
-            categoryAdapter.notifyDataSetChanged();
-        }
-        if (requestCode == 3 && resultCode == RESULT_OK) {
-            // Dodaj pitanje
-            String naziv = data.getStringExtra("pitanje");
-            ArrayList<String> odgovori = (ArrayList<String>) data.getSerializableExtra("odgovori");
-            String tacanOdgovor = data.getStringExtra("tacanOdgovor");
-            Pitanje pitanje = new Pitanje(naziv, naziv, odgovori, tacanOdgovor);
-            if (pitanja.contains(pitanje))
+        if (requestCode == 2 && resultCode == RESULT_OK)
+            dodajKategoriju(data);
+        if (requestCode == 3 && resultCode == RESULT_OK)
+            dodajPitanje(data);
+        if (requestCode == 4 && resultCode == RESULT_OK)
+            importujKviz(data);
+    }
+
+    private void importujKviz(Intent data) {
+        Uri uri;
+        if (data != null) {
+            uri = data.getData();
+            if (uri == null)
                 return;
-            pitanja.add(pitanja.size() - 1, pitanje);
-            listAdapter.notifyDataSetChanged();
-        }
-        if (requestCode == 42 && resultCode == RESULT_OK) {
-            // Importuj kviz
-            Uri uri;
-            if (data != null) {
-                uri = data.getData();
-                String[] result;
+            ArrayList<String[]> result;
+            try {
+                result = readCsv(uri);
+            } catch (IOException greska) {
+                showAlert("Neispravan format datoteke");
+                return;
+            }
+            if (result == null || result.size() == 0 || result.get(0).length != 3) {
+                showAlert("Neispravan format datoteke");
+                return;
+            }
+            String[] firstRow = result.get(0);
+            String nazivKviza = firstRow[0];
+            Kviz noviKviz = new Kviz();
+            noviKviz.setNaziv(nazivKviza);
+            if (kvizovi.contains(noviKviz)) {
+                showAlert("Kviz kojeg importujete već postoji!");
+                return;
+            }
+            String nazivKategorije = firstRow[1];
+            int brojPitanja = -1;
+            try {
+                brojPitanja = Integer.valueOf(firstRow[2]);
+            } catch (NumberFormatException ignored) {
+                // ignore
+            }
+            if (brojPitanja != result.size() - 1) {
+                showAlert("Kviz kojeg importujete ima neispravan broj pitanja!");
+                return;
+            }
+            ArrayList<Pitanje> tempPitanja = new ArrayList<>();
+            for (int i = 0; i < brojPitanja; i++) {
+                String[] row = result.get(i + 1);
+                if (row.length < 4) {
+                    showAlert("Neispravan format datoteke!");
+                    return;
+                }
+                String nazivPitanja = row[0];
+                int brojOdgovora = -1;
                 try {
-                    result = readTextFromUri(uri).split(",");
-                } catch (IOException greska) {
-                    greska.printStackTrace();
-                    return;
+                    brojOdgovora = Integer.valueOf(row[1]);
+                } catch (NumberFormatException ignored) {
+                    // ignore
                 }
-                if (result.length < 4) {
-                    showAlert("Neispravan format datoteke");
-                    return;
-                }
-                String nazivKviza = result[0];
-                Kviz noviKviz = new Kviz();
-                noviKviz.setNaziv(nazivKviza);
-                if (kvizovi.contains(noviKviz)) {
-                    showAlert("Kviz kojeg importujete već postoji!");
-                    return;
-                }
-                String nazivKategorije = result[1];
-                int brojOdgovora = Integer.valueOf(result[2]);
-                if (brojOdgovora != result.length - 4) {
+                if (brojOdgovora != row.length - 3) {
                     showAlert("Kviz kojeg importujete ima neispravan broj odgovora!");
                     return;
                 }
-                int indexTacOdgovora = Integer.valueOf(result[3]);
-                if (indexTacOdgovora < 0 || indexTacOdgovora >= brojOdgovora) {
+                int indexTacOdgovora = -1;
+                try {
+                    indexTacOdgovora = Integer.valueOf(row[2]);
+                } catch (NumberFormatException ignored) {
+                    // ignore
+                }
+                if (indexTacOdgovora < 0 || indexTacOdgovora >= brojPitanja) {
                     showAlert("Kviz kojeg importujete ima neispravan index tačnog odgovora!");
                     return;
                 }
-                quizName.setText(nazivKviza);
-                Kategorija novaKategorija = new Kategorija(nazivKategorije, "0");
-                if (!kategorije.contains(novaKategorija)) {
-                    kategorije.add(kategorije.size() - 1, novaKategorija);
-                    noveKategorije.add(novaKategorija);
-                    categorySpinner.setSelection(kategorije.size() - 2);
-                    categoryAdapter.notifyDataSetChanged();
-                } else {
-                    int pos = kategorije.indexOf(novaKategorija);
-                    categorySpinner.setSelection(pos);
-                }
-                Pitanje pitanje = new Pitanje();
-                pitanje.setNaziv("Test pitanje");
-                pitanje.setTekstPitanja("Test pitanje");
                 ArrayList<String> odgovori = new ArrayList<>();
-                for (int i = 4; i < result.length; i++) {
-                    if (i == indexTacOdgovora)
-                        pitanje.setTacan(result[i]);
+                String tacanOdgovor = null;
+                for (int j = 3; j < row.length; j++) {
+                    if (j - 3 == indexTacOdgovora)
+                        tacanOdgovor = row[j];
                     else
-                        odgovori.add(result[i]);
+                        odgovori.add(row[j]);
                 }
-                pitanje.setOdgovori(odgovori);
-                pitanja.add(pitanja.size() - 1, pitanje);
-                listAdapter.notifyDataSetChanged();
+                Pitanje pitanje = new Pitanje(nazivPitanja, nazivPitanja, odgovori, tacanOdgovor);
+                tempPitanja.add(pitanje);
             }
-
+            quizName.setText(nazivKviza);
+            Kategorija novaKategorija = new Kategorija(nazivKategorije, "0");
+            if (!kategorije.contains(novaKategorija)) {
+                kategorije.add(kategorije.size() - 1, novaKategorija);
+                noveKategorije.add(novaKategorija);
+                categorySpinner.setSelection(kategorije.size() - 2);
+                categoryAdapter.notifyDataSetChanged();
+            } else
+                categorySpinner.setSelection(kategorije.indexOf(novaKategorija));
+            pitanja.clear();
+            pitanja.addAll(tempPitanja);
+            pitanja.add(new Pitanje());
+            listAdapter.notifyDataSetChanged();
         }
+    }
+
+    private void dodajPitanje(Intent data) {
+        String naziv = data.getStringExtra("pitanje");
+        ArrayList<String> odgovori = (ArrayList<String>) data.getSerializableExtra("odgovori");
+        String tacanOdgovor = data.getStringExtra("tacanOdgovor");
+        Pitanje pitanje = new Pitanje(naziv, naziv, odgovori, tacanOdgovor);
+        if (pitanja.contains(pitanje))
+            return;
+        pitanja.add(pitanja.size() - 1, pitanje);
+        listAdapter.notifyDataSetChanged();
+    }
+
+    private void dodajKategoriju(Intent data) {
+        Kategorija kategorija = (Kategorija) data.getSerializableExtra("novaKategorija");
+        kategorije.add(kategorije.size() - 1, kategorija);
+        noveKategorije.add(kategorija);
+        categorySpinner.setSelection(kategorije.size() - 2);
+        categoryAdapter.notifyDataSetChanged();
+    }
+
+    private ArrayList<String[]> readCsv(Uri uri) throws IOException {
+        BufferedReader reader = null;
+        String line;
+        ArrayList<String[]> result = new ArrayList<>();
+        try {
+            InputStream inputStream = getContentResolver().openInputStream(uri);
+            reader = new BufferedReader(new InputStreamReader(inputStream));
+            while ((line = reader.readLine()) != null) {
+                String[] row = line.split(",");
+                result.add(row);
+            }
+        } finally {
+            if (reader != null)
+                reader.close();
+        }
+        return result;
     }
 
     private void showAlert(String message) {
@@ -226,17 +280,6 @@ public class DodajKvizAkt extends AppCompatActivity {
         });
         AlertDialog alert = builder.create();
         alert.show();
-    }
-
-    private String readTextFromUri(Uri uri) throws IOException {
-        InputStream inputStream = getContentResolver().openInputStream(uri);
-        BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
-        StringBuilder stringBuilder = new StringBuilder();
-        String line;
-        while ((line = reader.readLine()) != null)
-            stringBuilder.append(line);
-        reader.close();
-        return stringBuilder.toString();
     }
 
 

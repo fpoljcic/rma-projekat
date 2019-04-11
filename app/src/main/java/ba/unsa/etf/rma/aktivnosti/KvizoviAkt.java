@@ -35,21 +35,17 @@ public class KvizoviAkt extends AppCompatActivity {
     }
 
     private void setListeners() {
+        quizList.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> adapterView, View view, int position, long id) {
+                urediKviz(position);
+                return true;
+            }
+        });
         quizList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Intent myIntent = new Intent(KvizoviAkt.this, DodajKvizAkt.class);
-                if (prikazaniKvizovi.get(position) != null) {
-                    myIntent.putExtra("pozicija", position);
-                    myIntent.putExtra("kviz", prikazaniKvizovi.get(position));
-                } else {
-                    Kviz kviz = new Kviz();
-                    kviz.setKategorija((Kategorija) categorySpinner.getSelectedItem());
-                    myIntent.putExtra("kviz", kviz);
-                }
-                myIntent.putExtra("kategorija", kategorije);
-                myIntent.putExtra("kvizovi", kvizovi);
-                startActivityForResult(myIntent, 1);
+            public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
+                igrajKviz(position);
             }
         });
         categorySpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
@@ -63,6 +59,29 @@ public class KvizoviAkt extends AppCompatActivity {
                 // Do nothing?
             }
         });
+    }
+
+    private void igrajKviz(int position) {
+        if (prikazaniKvizovi.get(position) != null) {
+            Intent myIntent = new Intent(KvizoviAkt.this, IgrajKvizAkt.class);
+            myIntent.putExtra("kviz", prikazaniKvizovi.get(position));
+            startActivityForResult(myIntent, 2);
+        }
+    }
+
+    private void urediKviz(int position) {
+        Intent myIntent = new Intent(KvizoviAkt.this, DodajKvizAkt.class);
+        if (prikazaniKvizovi.get(position) != null) {
+            myIntent.putExtra("pozicija", position);
+            myIntent.putExtra("kviz", prikazaniKvizovi.get(position));
+        } else {
+            Kviz kviz = new Kviz();
+            kviz.setKategorija((Kategorija) categorySpinner.getSelectedItem());
+            myIntent.putExtra("kviz", kviz);
+        }
+        myIntent.putExtra("kategorija", kategorije);
+        myIntent.putExtra("kvizovi", kvizovi);
+        startActivityForResult(myIntent, 1);
     }
 
     @Override
@@ -100,6 +119,9 @@ public class KvizoviAkt extends AppCompatActivity {
                 kategorije.addAll(noveKategorije);
                 categoryAdapter.notifyDataSetChanged();
             }
+        }
+        if (requestCode == 2) {
+            // Zavrsio igranje kviza
         }
     }
 
