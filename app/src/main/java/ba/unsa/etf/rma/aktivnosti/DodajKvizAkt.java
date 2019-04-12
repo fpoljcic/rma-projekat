@@ -210,8 +210,7 @@ public class DodajKvizAkt extends AppCompatActivity {
                 for (int j = 3; j < row.length; j++) {
                     if (j - 3 == indexTacOdgovora)
                         tacanOdgovor = row[j];
-                    else
-                        odgovori.add(row[j]);
+                    odgovori.add(row[j]);
                 }
                 Pitanje pitanje = new Pitanje(nazivPitanja, nazivPitanja, odgovori, tacanOdgovor);
                 tempPitanja.add(pitanje);

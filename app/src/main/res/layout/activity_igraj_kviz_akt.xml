@@ -4,18 +4,19 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:weightSum="2"
+    android:padding="15dp"
+    android:weightSum="3"
     tools:context=".aktivnosti.IgrajKvizAkt">
-
-    <FrameLayout
-        android:id="@+id/informacijePlace"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1" />
 
     <FrameLayout
         android:id="@+id/pitanjePlace"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1" />
+        android:layout_weight="1.3" />
+
+    <FrameLayout
+        android:id="@+id/informacijePlace"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1.7" />
 </LinearLayout>
