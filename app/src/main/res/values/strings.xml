@@ -19,4 +19,5 @@
     <string name="broj_preostalih_pitanja">Broj preostalih pitanja</string>
     <string name="procenat_tacnih">Procenat tacnih</string>
     <string name="zavrsi_kviz">Zavrsi kviz</string>
+    <string name="lista_kategorija">Lista kategorija:</string>
 </resources>

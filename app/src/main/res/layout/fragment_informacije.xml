@@ -1,76 +1,82 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical"
-    tools:context=".fragmenti.InformacijeFrag">
+    android:layout_height="wrap_content"
+    android:fillViewport="true">
 
-    <TextView
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="5dp"
-        android:text="@string/naziv_kviza"
-        android:textAlignment="center"
-        android:textSize="14sp" />
+        android:orientation="vertical"
+        tools:context=".fragmenti.InformacijeFrag">
 
-    <TextView
-        android:id="@+id/infNazivKviza"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:textAlignment="center"
-        android:textSize="18sp" />
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            android:text="@string/naziv_kviza"
+            android:textAlignment="center"
+            android:textSize="14sp" />
 
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
-        android:text="@string/broj_tacnih_pitanja"
-        android:textAlignment="center"
-        android:textSize="14sp" />
+        <TextView
+            android:id="@+id/infNazivKviza"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textAlignment="center"
+            android:textSize="18sp" />
 
-    <TextView
-        android:id="@+id/infBrojTacnihPitanja"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:textAlignment="center"
-        android:textSize="18sp" />
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:text="@string/broj_tacnih_pitanja"
+            android:textAlignment="center"
+            android:textSize="14sp" />
 
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
-        android:text="@string/broj_preostalih_pitanja"
-        android:textAlignment="center"
-        android:textSize="14sp" />
+        <TextView
+            android:id="@+id/infBrojTacnihPitanja"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textAlignment="center"
+            android:textSize="18sp" />
 
-    <TextView
-        android:id="@+id/infBrojPreostalihPitanja"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:textAlignment="center"
-        android:textSize="18sp" />
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:text="@string/broj_preostalih_pitanja"
+            android:textAlignment="center"
+            android:textSize="14sp" />
 
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
-        android:text="@string/procenat_tacnih"
-        android:textAlignment="center"
-        android:textSize="14sp" />
+        <TextView
+            android:id="@+id/infBrojPreostalihPitanja"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textAlignment="center"
+            android:textSize="18sp" />
 
-    <TextView
-        android:id="@+id/infProcenatTacni"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:textAlignment="center"
-        android:textSize="18sp" />
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:text="@string/procenat_tacnih"
+            android:textAlignment="center"
+            android:textSize="14sp" />
 
-    <Button
-        android:id="@+id/btnKraj"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="15dp"
-        android:text="@string/zavrsi_kviz"
-        android:textSize="24sp" />
-</LinearLayout>
+        <TextView
+            android:id="@+id/infProcenatTacni"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textAlignment="center"
+            android:textSize="18sp" />
+
+        <Button
+            android:id="@+id/btnKraj"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="15dp"
+            android:text="@string/zavrsi_kviz"
+            android:textSize="24sp" />
+    </LinearLayout>
+</ScrollView>

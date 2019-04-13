@@ -27,6 +27,7 @@ public class PitanjeFrag extends Fragment {
     private ArrayList<String> odgovori = new ArrayList<>();
     private static final String ARG_PARAM1 = "param1";
     private OnFragmentInteractionListener callback;
+    private boolean isActive = false;
 
     public PitanjeFrag() {
         // Required empty public constructor
@@ -75,39 +76,43 @@ public class PitanjeFrag extends Fragment {
         listaOdgovora.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
-                int pozicijaTacnog = odgovori.indexOf(pitanja.get(pozicijaPitanja).getTacan());
+                if (!isActive) {
+                    isActive = true;
+                    int pozicijaTacnog = odgovori.indexOf(pitanja.get(pozicijaPitanja).getTacan());
 
-                final TextView rightText = (TextView) listaOdgovora.getChildAt(pozicijaTacnog);
-                final TextView selectedText = view.findViewById(android.R.id.text1);
+                    final TextView rightText = (TextView) listaOdgovora.getChildAt(pozicijaTacnog);
+                    final TextView selectedText = view.findViewById(android.R.id.text1);
 
-                if (position == pozicijaTacnog) {
-                    // Izabran tacan odgovor
-                    selectedText.setBackgroundResource(R.color.zelena);
-                } else {
-                    // Izabran pogresan odgovor
-                    selectedText.setBackgroundResource(R.color.crvena);
-                    rightText.setBackgroundResource(R.color.zelena);
-                }
-                final boolean quizEnd = callback.onAnswerListItemClick(position == pozicijaTacnog);
-                Handler handler = new Handler();
-                handler.postDelayed(new Runnable() {
-                    public void run() {
-                        if (selectedText != rightText)
-                            rightText.setBackgroundResource(R.color.colorDefaultBackground);
-                        selectedText.setBackgroundResource(R.color.colorDefaultBackground);
-                        if (quizEnd) {
-                            tekstPitanjaField.setText("Kviz je završen!");
-                            odgovori.clear();
-                        } else {
-                            pozicijaPitanja++;
-                            tekstPitanjaField.setText(pitanja.get(pozicijaPitanja).getTekstPitanja());
-                            odgovori.clear();
-                            odgovori.addAll(pitanja.get(pozicijaPitanja).getOdgovori());
-                            Collections.shuffle(odgovori);
-                        }
-                        adapter.notifyDataSetChanged();
+                    if (position == pozicijaTacnog) {
+                        // Izabran tacan odgovor
+                        selectedText.setBackgroundResource(R.color.zelena);
+                    } else {
+                        // Izabran pogresan odgovor
+                        selectedText.setBackgroundResource(R.color.crvena);
+                        rightText.setBackgroundResource(R.color.zelena);
                     }
-                }, 2000);
+                    final boolean quizEnd = callback.onAnswerListItemClick(position == pozicijaTacnog);
+                    Handler handler = new Handler();
+                    handler.postDelayed(new Runnable() {
+                        public void run() {
+                            if (selectedText != rightText)
+                                rightText.setBackgroundResource(R.color.colorDefaultBackground);
+                            selectedText.setBackgroundResource(R.color.colorDefaultBackground);
+                            if (quizEnd) {
+                                tekstPitanjaField.setText("Kviz je završen!");
+                                odgovori.clear();
+                            } else {
+                                pozicijaPitanja++;
+                                tekstPitanjaField.setText(pitanja.get(pozicijaPitanja).getTekstPitanja());
+                                odgovori.clear();
+                                odgovori.addAll(pitanja.get(pozicijaPitanja).getOdgovori());
+                                Collections.shuffle(odgovori);
+                            }
+                            adapter.notifyDataSetChanged();
+                            isActive = false;
+                        }
+                    }, 2000);
+                }
             }
         });
     }
