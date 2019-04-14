@@ -9,6 +9,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
 
+
 import ba.unsa.etf.rma.R;
 
 public class InformacijeFrag extends Fragment {
@@ -16,7 +17,8 @@ public class InformacijeFrag extends Fragment {
     private TextView brPreostalihPitanjaField, procenatTacnihField;
     private Button button;
     private String nazivKviza;
-    private int brojPitanja;
+    private int brojPitanja, brojTacnih = 0, brojPreostalih;
+    private float procenatTacnih = 0.0F;
 
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
@@ -42,6 +44,7 @@ public class InformacijeFrag extends Fragment {
         if (getArguments() != null) {
             nazivKviza = getArguments().getString(ARG_PARAM1);
             brojPitanja = getArguments().getInt(ARG_PARAM2);
+            brojPreostalih = brojPitanja;
         }
     }
 
@@ -67,9 +70,9 @@ public class InformacijeFrag extends Fragment {
 
     private void setData() {
         nazivKvizaField.setText(nazivKviza);
-        brojTacnihPitanjaField.setText("0");
-        brPreostalihPitanjaField.setText(String.valueOf(brojPitanja));
-        procenatTacnihField.setText("0");
+        brojTacnihPitanjaField.setText(String.valueOf(brojTacnih));
+        brPreostalihPitanjaField.setText(String.valueOf(brojPreostalih));
+        procenatTacnihField.setText(String.valueOf(procenatTacnih));
     }
 
     private void linkControls(View view) {
@@ -97,11 +100,15 @@ public class InformacijeFrag extends Fragment {
     }
 
     public boolean updateData(boolean correct) {
-        brPreostalihPitanjaField.setText(String.valueOf(Integer.valueOf(brPreostalihPitanjaField.getText().toString()) - 1));
-        if (correct)
-            brojTacnihPitanjaField.setText(String.valueOf(Integer.valueOf(brojTacnihPitanjaField.getText().toString()) + 1));
-        procenatTacnihField.setText(String.valueOf(Float.valueOf(brojTacnihPitanjaField.getText().toString()) / brojPitanja));
-        return Integer.valueOf(brPreostalihPitanjaField.getText().toString()) == 0;
+        brojPreostalih--;
+        brPreostalihPitanjaField.setText(String.valueOf(brojPreostalih));
+        if (correct) {
+            brojTacnih++;
+            brojTacnihPitanjaField.setText(String.valueOf(brojTacnih));
+        }
+        procenatTacnih = (float) brojTacnih / (brojPitanja - brojPreostalih);
+        procenatTacnihField.setText(String.valueOf(procenatTacnih));
+        return brojPreostalih == 0;
     }
 
     public interface OnFragmentInteractionListener {

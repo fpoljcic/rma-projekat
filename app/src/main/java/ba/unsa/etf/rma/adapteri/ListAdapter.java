@@ -1,4 +1,4 @@
-package ba.unsa.etf.rma.klase;
+package ba.unsa.etf.rma.adapteri;
 
 import android.app.Activity;
 import android.content.Context;
@@ -16,6 +16,7 @@ import com.maltaisn.icondialog.IconHelper;
 import java.util.ArrayList;
 
 import ba.unsa.etf.rma.R;
+import ba.unsa.etf.rma.klase.Kviz;
 
 public class ListAdapter extends BaseAdapter {
     private Activity activity;
@@ -30,25 +31,29 @@ public class ListAdapter extends BaseAdapter {
         inflater = (LayoutInflater) activity.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
     }
 
+    @Override
     public int getCount() {
         if (data.size() <= 0)
             return 1;
         return data.size();
     }
 
+    @Override
     public Object getItem(int position) {
-        return position;
+        return data.get(position);
     }
 
+    @Override
     public long getItemId(int position) {
         return position;
     }
 
     public static class ViewHolder {
-        public TextView name;
-        public ImageView icon;
+        TextView name;
+        ImageView icon;
     }
 
+    @Override
     public View getView(int position, View convertView, ViewGroup parent) {
         View view = convertView;
         final ViewHolder holder;

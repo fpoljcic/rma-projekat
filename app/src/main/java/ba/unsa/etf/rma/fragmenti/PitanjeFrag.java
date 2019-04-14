@@ -80,7 +80,7 @@ public class PitanjeFrag extends Fragment {
                     isActive = true;
                     int pozicijaTacnog = odgovori.indexOf(pitanja.get(pozicijaPitanja).getTacan());
 
-                    final TextView rightText = (TextView) listaOdgovora.getChildAt(pozicijaTacnog);
+                    final TextView rightText = (TextView) listaOdgovora.getChildAt(pozicijaTacnog - listaOdgovora.getFirstVisiblePosition());
                     final TextView selectedText = view.findViewById(android.R.id.text1);
 
                     if (position == pozicijaTacnog) {
@@ -89,13 +89,14 @@ public class PitanjeFrag extends Fragment {
                     } else {
                         // Izabran pogresan odgovor
                         selectedText.setBackgroundResource(R.color.crvena);
-                        rightText.setBackgroundResource(R.color.zelena);
+                        if (rightText != null)
+                            rightText.setBackgroundResource(R.color.zelena);
                     }
                     final boolean quizEnd = callback.onAnswerListItemClick(position == pozicijaTacnog);
                     Handler handler = new Handler();
                     handler.postDelayed(new Runnable() {
                         public void run() {
-                            if (selectedText != rightText)
+                            if (rightText != null && selectedText != rightText)
                                 rightText.setBackgroundResource(R.color.colorDefaultBackground);
                             selectedText.setBackgroundResource(R.color.colorDefaultBackground);
                             if (quizEnd) {

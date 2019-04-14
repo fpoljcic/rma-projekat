@@ -1,22 +1,26 @@
 package ba.unsa.etf.rma.aktivnosti;
 
 import android.content.Intent;
+import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.FrameLayout;
 import android.widget.ListView;
 import android.widget.Spinner;
 
 import java.util.ArrayList;
 
 import ba.unsa.etf.rma.R;
+import ba.unsa.etf.rma.fragmenti.DetailFrag;
+import ba.unsa.etf.rma.fragmenti.ListFrag;
 import ba.unsa.etf.rma.klase.Kategorija;
 import ba.unsa.etf.rma.klase.Kviz;
-import ba.unsa.etf.rma.klase.ListAdapter;
+import ba.unsa.etf.rma.adapteri.ListAdapter;
 
-public class KvizoviAkt extends AppCompatActivity {
+public class KvizoviAkt extends AppCompatActivity implements ListFrag.OnFragmentInteractionListener, DetailFrag.OnFragmentInteractionListener {
     private Spinner categorySpinner;
     private ListView quizList;
     private ArrayList<Kviz> kvizovi = new ArrayList<>();
@@ -24,14 +28,39 @@ public class KvizoviAkt extends AppCompatActivity {
     private ArrayList<Kategorija> kategorije = new ArrayList<>();
     private ArrayAdapter<Kategorija> categoryAdapter;
     private ListAdapter listAdapter;
+    private boolean siriEkran;
+    private ListFrag listFrag;
+    private DetailFrag detailFrag;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        linkControls();
-        filterByCategory(kategorije.get(0));
-        setListeners();
+        checkScreenSize();
+        if (!siriEkran) {
+            linkControls();
+            filterByCategory(kategorije.get(0));
+            setListeners();
+        }
+    }
+
+    private void checkScreenSize() {
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        FrameLayout frameLayout = findViewById(R.id.listPlace);
+        if (frameLayout != null) {
+            siriEkran = true;
+            listFrag = (ListFrag) fragmentManager.findFragmentById(R.id.listPlace);
+            if (listFrag == null) {
+                kategorije.add(new Kategorija("Svi", "0"));
+                listFrag = ListFrag.newInstance(kategorije);
+                fragmentManager.beginTransaction().replace(R.id.listPlace, listFrag).commit();
+            }
+            detailFrag = (DetailFrag) fragmentManager.findFragmentById(R.id.detailPlace);
+            if (detailFrag == null) {
+                detailFrag = DetailFrag.newInstance(kvizovi);
+                fragmentManager.beginTransaction().replace(R.id.detailPlace, detailFrag).commit();
+            }
+        }
     }
 
     private void setListeners() {
@@ -120,9 +149,11 @@ public class KvizoviAkt extends AppCompatActivity {
                 categoryAdapter.notifyDataSetChanged();
             }
         }
+        /*
         if (requestCode == 2) {
             // Zavrsio igranje kviza
         }
+        */
     }
 
     private void filterByCategory(Kategorija kategorija) {
@@ -151,5 +182,25 @@ public class KvizoviAkt extends AppCompatActivity {
         quizList = findViewById(R.id.lvKvizovi);
         listAdapter = new ListAdapter(this, prikazaniKvizovi, getResources());
         quizList.setAdapter(listAdapter);
+    }
+
+    @Override
+    public void onKategorijaClick(Kategorija kategorija) {
+        detailFrag.filterByCategory(kategorija);
+    }
+
+    @Override
+    public Kategorija getSelectedKategorija() {
+        return listFrag.getSelectedKategorija();
+    }
+
+    @Override
+    public ArrayList<Kategorija> getKategorije() {
+        return listFrag.getKategorije();
+    }
+
+    @Override
+    public void addKategorije(ArrayList<Kategorija> kategorije) {
+        listFrag.addKategorije(kategorije);
     }
 }

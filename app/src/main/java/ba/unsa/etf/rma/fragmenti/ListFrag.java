@@ -1,7 +1,6 @@
 package ba.unsa.etf.rma.fragmenti;
 
 import android.content.Context;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
@@ -20,6 +19,7 @@ public class ListFrag extends Fragment {
     private ListView listaKategorija;
     private ArrayList<Kategorija> kategorije;
     private ArrayAdapter<Kategorija> adapter;
+    private int position;
     private static final String ARG_PARAM1 = "param1";
 
     private OnFragmentInteractionListener callback;
@@ -34,6 +34,15 @@ public class ListFrag extends Fragment {
         args.putSerializable(ARG_PARAM1, kategorije);
         fragment.setArguments(args);
         return fragment;
+    }
+
+    public ArrayList<Kategorija> getKategorije() {
+        return kategorije;
+    }
+
+    public void addKategorije(ArrayList<Kategorija> kategorije) {
+        this.kategorije.addAll(kategorije);
+        adapter.notifyDataSetChanged();
     }
 
     @Override
@@ -54,10 +63,12 @@ public class ListFrag extends Fragment {
     }
 
     private void setListener() {
+        final ListFrag listFrag = this;
         listaKategorija.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
-
+                callback.onKategorijaClick(kategorije.get(position));
+                listFrag.position = position;
             }
         });
     }
@@ -87,7 +98,11 @@ public class ListFrag extends Fragment {
         callback = null;
     }
 
+    public Kategorija getSelectedKategorija() {
+        return kategorije.get(position);
+    }
+
     public interface OnFragmentInteractionListener {
-        void onFragmentInteraction(Uri uri);
+        void onKategorijaClick(Kategorija kategorija);
     }
 }

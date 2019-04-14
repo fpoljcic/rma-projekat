@@ -20,9 +20,6 @@ public class IgrajKvizAkt extends AppCompatActivity implements InformacijeFrag.O
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_igraj_kviz_akt);
-        // test da li je fragment vec dodat
-        if (savedInstanceState != null)
-            return;
         getIntentData();
         dodajFragmente();
     }
