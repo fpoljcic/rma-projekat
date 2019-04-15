@@ -19,8 +19,9 @@ public class ListFrag extends Fragment {
     private ListView listaKategorija;
     private ArrayList<Kategorija> kategorije;
     private ArrayAdapter<Kategorija> adapter;
-    private int position;
+    private int indexKategorije;
     private static final String ARG_PARAM1 = "param1";
+    private static final String ARG_PARAM2 = "param2";
 
     private OnFragmentInteractionListener callback;
 
@@ -28,10 +29,11 @@ public class ListFrag extends Fragment {
         // Required empty public constructor
     }
 
-    public static ListFrag newInstance(ArrayList<Kategorija> kategorije) {
+    public static ListFrag newInstance(ArrayList<Kategorija> kategorije, int position) {
         ListFrag fragment = new ListFrag();
         Bundle args = new Bundle();
         args.putSerializable(ARG_PARAM1, kategorije);
+        args.putInt(ARG_PARAM2, position);
         fragment.setArguments(args);
         return fragment;
     }
@@ -50,6 +52,7 @@ public class ListFrag extends Fragment {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
             kategorije = (ArrayList<Kategorija>) getArguments().getSerializable(ARG_PARAM1);
+            indexKategorije = getArguments().getInt(ARG_PARAM2);
         }
     }
 
@@ -59,6 +62,7 @@ public class ListFrag extends Fragment {
         linkControls(view);
         setData(view);
         setListener();
+        listaKategorija.setSelection(indexKategorije);
         return view;
     }
 
@@ -68,7 +72,7 @@ public class ListFrag extends Fragment {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
                 callback.onKategorijaClick(kategorije.get(position));
-                listFrag.position = position;
+                listFrag.indexKategorije = position;
             }
         });
     }
@@ -99,7 +103,11 @@ public class ListFrag extends Fragment {
     }
 
     public Kategorija getSelectedKategorija() {
-        return kategorije.get(position);
+        return kategorije.get(indexKategorije);
+    }
+
+    public int getIndexKategorije() {
+        return indexKategorije;
     }
 
     public interface OnFragmentInteractionListener {

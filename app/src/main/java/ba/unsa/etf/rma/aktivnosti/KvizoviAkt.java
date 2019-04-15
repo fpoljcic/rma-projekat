@@ -36,12 +36,34 @@ public class KvizoviAkt extends AppCompatActivity implements ListFrag.OnFragment
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        int index = 0;
+        if (savedInstanceState != null) {
+            index = restoreData(savedInstanceState);
+        } else
+            addStartData();
         checkScreenSize();
         if (!siriEkran) {
             linkControls();
-            filterByCategory(kategorije.get(0));
             setListeners();
+            categorySpinner.setSelection(index);
         }
+    }
+
+    @Override
+    protected void onSaveInstanceState(final Bundle savedInstanceState) {
+        super.onSaveInstanceState(savedInstanceState);
+        savedInstanceState.putSerializable("kvizovi", kvizovi);
+        savedInstanceState.putSerializable("prikazaniKvizovi", prikazaniKvizovi);
+        savedInstanceState.putSerializable("kategorije", kategorije);
+        if (listFrag != null)
+            savedInstanceState.putInt("position", listFrag.getIndexKategorije());
+    }
+
+    private int restoreData(Bundle savedInstanceState) {
+        kvizovi = (ArrayList<Kviz>) savedInstanceState.getSerializable("kvizovi");
+        prikazaniKvizovi = (ArrayList<Kviz>) savedInstanceState.getSerializable("prikazaniKvizovi");
+        kategorije = (ArrayList<Kategorija>) savedInstanceState.getSerializable("kategorije");
+        return savedInstanceState.getInt("position");
     }
 
     private void checkScreenSize() {
@@ -49,16 +71,18 @@ public class KvizoviAkt extends AppCompatActivity implements ListFrag.OnFragment
         FrameLayout frameLayout = findViewById(R.id.listPlace);
         if (frameLayout != null) {
             siriEkran = true;
-            listFrag = (ListFrag) fragmentManager.findFragmentById(R.id.listPlace);
-            if (listFrag == null) {
-                kategorije.add(new Kategorija("Svi", "0"));
-                listFrag = ListFrag.newInstance(kategorije);
-                fragmentManager.beginTransaction().replace(R.id.listPlace, listFrag).commit();
-            }
             detailFrag = (DetailFrag) fragmentManager.findFragmentById(R.id.detailPlace);
             if (detailFrag == null) {
-                detailFrag = DetailFrag.newInstance(kvizovi);
+                detailFrag = DetailFrag.newInstance(kvizovi, prikazaniKvizovi);
                 fragmentManager.beginTransaction().replace(R.id.detailPlace, detailFrag).commit();
+            }
+            listFrag = (ListFrag) fragmentManager.findFragmentById(R.id.listPlace);
+            if (listFrag == null) {
+                int selectedCategory = 0;
+                if (categorySpinner != null)
+                    selectedCategory = categorySpinner.getSelectedItemPosition();
+                listFrag = ListFrag.newInstance(kategorije, selectedCategory);
+                fragmentManager.beginTransaction().replace(R.id.listPlace, listFrag).commit();
             }
         }
     }
@@ -81,6 +105,7 @@ public class KvizoviAkt extends AppCompatActivity implements ListFrag.OnFragment
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 Kategorija kategorija = kategorije.get(position);
                 filterByCategory(kategorija);
+                listAdapter.notifyDataSetChanged();
             }
 
             @Override
@@ -149,11 +174,7 @@ public class KvizoviAkt extends AppCompatActivity implements ListFrag.OnFragment
                 categoryAdapter.notifyDataSetChanged();
             }
         }
-        /*
-        if (requestCode == 2) {
-            // Zavrsio igranje kviza
-        }
-        */
+        // if (requestCode == 2) // Zavrsio igranje kviza
     }
 
     private void filterByCategory(Kategorija kategorija) {
@@ -168,13 +189,15 @@ public class KvizoviAkt extends AppCompatActivity implements ListFrag.OnFragment
             }
             prikazaniKvizovi.add(null);
         }
-        listAdapter.notifyDataSetChanged();
+    }
+
+    private void addStartData() {
+        prikazaniKvizovi.add(null);
+        kategorije.add(new Kategorija("Svi", "0"));
     }
 
 
     private void linkControls() {
-        prikazaniKvizovi.add(null);
-        kategorije.add(new Kategorija("Svi", "0"));
         categorySpinner = findViewById(R.id.spPostojeceKategorije);
         int layoutID = android.R.layout.simple_list_item_1;
         categoryAdapter = new ArrayAdapter<>(this, layoutID, kategorije);
@@ -186,7 +209,17 @@ public class KvizoviAkt extends AppCompatActivity implements ListFrag.OnFragment
 
     @Override
     public void onKategorijaClick(Kategorija kategorija) {
-        detailFrag.filterByCategory(kategorija);
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        if (siriEkran) {
+            kvizovi = detailFrag.getKvizovi();
+            detailFrag = (DetailFrag) fragmentManager.findFragmentById(R.id.detailPlace);
+            if(detailFrag != null) {
+                fragmentManager.beginTransaction().remove(detailFrag).commit();
+            }
+            filterByCategory(kategorija);
+            detailFrag = DetailFrag.newInstance(kvizovi, prikazaniKvizovi);
+            fragmentManager.beginTransaction().replace(R.id.detailPlace, detailFrag).commit();
+        }
     }
 
     @Override

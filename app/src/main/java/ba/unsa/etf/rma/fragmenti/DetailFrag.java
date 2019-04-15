@@ -28,6 +28,7 @@ public class DetailFrag extends Fragment {
     private ArrayList<Kviz> prikazaniKvizovi = new ArrayList<>();
     private GridAdpater gridAdpater;
     private static final String ARG_PARAM1 = "param1";
+    private static final String ARG_PARAM2 = "param2";
 
     private OnFragmentInteractionListener callback;
 
@@ -35,12 +36,30 @@ public class DetailFrag extends Fragment {
         // Required empty public constructor
     }
 
-    public static DetailFrag newInstance(ArrayList<Kviz> kvizovi) {
+    public static DetailFrag newInstance(ArrayList<Kviz> kvizovi, ArrayList<Kviz> prikazaniKvizovi) {
         DetailFrag fragment = new DetailFrag();
         Bundle args = new Bundle();
         args.putSerializable(ARG_PARAM1, kvizovi);
+        args.putSerializable(ARG_PARAM2, prikazaniKvizovi);
         fragment.setArguments(args);
         return fragment;
+    }
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        if (getArguments() != null) {
+            kvizovi = (ArrayList<Kviz>) getArguments().getSerializable(ARG_PARAM1);
+            prikazaniKvizovi = (ArrayList<Kviz>) getArguments().getSerializable(ARG_PARAM2);
+        }
+    }
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.fragment_detail, container, false);
+        linkControls(view);
+        setListener();
+        return view;
     }
 
     @Override
@@ -91,22 +110,6 @@ public class DetailFrag extends Fragment {
         }
     }
 
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            kvizovi = (ArrayList<Kviz>) getArguments().getSerializable(ARG_PARAM1);
-        }
-    }
-
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_detail, container, false);
-        linkControls(view);
-        setListener();
-        return view;
-    }
-
     private void setListener() {
         gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -147,7 +150,6 @@ public class DetailFrag extends Fragment {
     }
 
     private void linkControls(View view) {
-        prikazaniKvizovi.add(null);
         gridView = view.findViewById(R.id.gridKvizovi);
         gridAdpater = new GridAdpater(getActivity(), prikazaniKvizovi, getResources());
         gridView.setAdapter(gridAdpater);
@@ -169,19 +171,8 @@ public class DetailFrag extends Fragment {
         callback = null;
     }
 
-    public void filterByCategory(Kategorija kategorija) {
-        prikazaniKvizovi.clear();
-        if (kategorija.getNaziv().equals("Svi")) {
-            prikazaniKvizovi.addAll(kvizovi);
-            prikazaniKvizovi.add(null);
-        } else {
-            for (Kviz kviz : kvizovi) {
-                if (kviz.getKategorija() != null && kviz.getKategorija().equals(kategorija))
-                    prikazaniKvizovi.add(kviz);
-            }
-            prikazaniKvizovi.add(null);
-        }
-        gridAdpater.notifyDataSetChanged();
+    public ArrayList<Kviz> getKvizovi() {
+        return kvizovi;
     }
 
     public interface OnFragmentInteractionListener {

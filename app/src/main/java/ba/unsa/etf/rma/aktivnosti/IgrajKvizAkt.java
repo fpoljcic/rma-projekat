@@ -2,6 +2,7 @@ package ba.unsa.etf.rma.aktivnosti;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
@@ -24,12 +25,20 @@ public class IgrajKvizAkt extends AppCompatActivity implements InformacijeFrag.O
         dodajFragmente();
     }
 
+    private void ukloniFragment(FragmentManager fragmentManager, int resource) {
+        Fragment fragment = fragmentManager.findFragmentById(resource);
+        if (fragment != null)
+            fragmentManager.beginTransaction().remove(fragment).commit();
+    }
+
     private void dodajFragmente() {
         FragmentManager fragmentManager = getSupportFragmentManager();
+        ukloniFragment(fragmentManager, R.id.pitanjePlace);
+        ukloniFragment(fragmentManager, R.id.informacijePlace);
+
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
 
         pitanjeFrag = PitanjeFrag.newInstance(kviz.getPitanja());
-
         fragmentTransaction.add(R.id.pitanjePlace, pitanjeFrag);
 
         informacijeFrag = InformacijeFrag.newInstance(kviz.getNaziv(), kviz.getPitanja().size());

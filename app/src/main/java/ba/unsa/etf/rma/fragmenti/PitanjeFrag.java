@@ -67,6 +67,10 @@ public class PitanjeFrag extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_pitanje, container, false);
         linkControls(view);
+        if (pitanja.isEmpty()) {
+            tekstPitanjaField.setText(getString(R.string.kviz_je_zavrsen));
+            return view;
+        }
         setData(view);
         setListener();
         return view;
