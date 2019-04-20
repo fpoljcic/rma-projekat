@@ -2,6 +2,7 @@ package ba.unsa.etf.rma.fragmenti;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Resources;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
@@ -91,7 +92,9 @@ public class DetailFrag extends Fragment {
                         prikazaniKvizovi.remove(postojeciKviz);
                 }
                 gridAdpater.notifyDataSetChanged();
-                /* -- Ovo je potrebno dodat radi bug-a oko ikone...
+
+                /* -------- Ovo je potrebno dodat radi bug-a oko ikone... --------
+
                 prikazaniKvizovi.remove(null);
                 gridAdpater.notifyDataSetChanged();
                 Handler handler = new Handler();
@@ -101,7 +104,9 @@ public class DetailFrag extends Fragment {
                         gridAdpater.notifyDataSetChanged();
                     }
                 }, 600);
-                */
+
+                   -------- ...bug nije toliko bitan pa je ovaj dio izostavljen. -------- */
+
             } else if (resultCode == RESULT_CANCELED) {
                 // Pritisnuto back dugme
                 ArrayList<Kategorija> noveKategorije = (ArrayList<Kategorija>) data.getSerializableExtra("noveKategorije");
@@ -151,8 +156,16 @@ public class DetailFrag extends Fragment {
 
     private void linkControls(View view) {
         gridView = view.findViewById(R.id.gridKvizovi);
+        int elementWidth = (int) (getScreenWidth() * 0.65) / 500;
+        // Za jedan element gridView-a treba sirina od 500px
+        gridView.setNumColumns(elementWidth);
+
         gridAdpater = new GridAdpater(getActivity(), prikazaniKvizovi, getResources());
         gridView.setAdapter(gridAdpater);
+    }
+
+    private int getScreenWidth() {
+        return Resources.getSystem().getDisplayMetrics().widthPixels;
     }
 
     @Override
@@ -177,9 +190,7 @@ public class DetailFrag extends Fragment {
 
     public interface OnFragmentInteractionListener {
         Kategorija getSelectedKategorija();
-
         ArrayList<Kategorija> getKategorije();
-
         void addKategorije(ArrayList<Kategorija> kategorije);
     }
 }

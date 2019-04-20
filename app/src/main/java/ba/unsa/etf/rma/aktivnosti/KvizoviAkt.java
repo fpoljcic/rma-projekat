@@ -141,6 +141,8 @@ public class KvizoviAkt extends AppCompatActivity implements ListFrag.OnFragment
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+        if (siriEkran)
+            return;
         if (requestCode == 1) {
             if (resultCode == RESULT_OK) {
                 Kviz kviz = (Kviz) data.getSerializableExtra("kviz");
@@ -224,16 +226,25 @@ public class KvizoviAkt extends AppCompatActivity implements ListFrag.OnFragment
 
     @Override
     public Kategorija getSelectedKategorija() {
-        return listFrag.getSelectedKategorija();
+        if (listFrag != null)
+            return listFrag.getSelectedKategorija();
+        return (Kategorija) categorySpinner.getSelectedItem();
     }
 
     @Override
     public ArrayList<Kategorija> getKategorije() {
-        return listFrag.getKategorije();
+        if (listFrag != null)
+            return listFrag.getKategorije();
+        return kategorije;
     }
 
     @Override
     public void addKategorije(ArrayList<Kategorija> kategorije) {
-        listFrag.addKategorije(kategorije);
+        if (listFrag != null)
+            listFrag.addKategorije(kategorije);
+        else {
+            this.kategorije.addAll(kategorije);
+            categoryAdapter.notifyDataSetChanged();
+        }
     }
 }

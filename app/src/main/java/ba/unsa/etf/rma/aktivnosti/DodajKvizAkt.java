@@ -151,11 +151,11 @@ public class DodajKvizAkt extends AppCompatActivity {
             try {
                 result = readCsv(uri);
             } catch (IOException greska) {
-                showAlert("Neispravan format datoteke");
+                showAlert("Datoteka kviza kojeg importujete nema ispravan format!");
                 return;
             }
             if (result == null || result.size() == 0 || result.get(0).length != 3) {
-                showAlert("Neispravan format datoteke");
+                showAlert("Datoteka kviza kojeg importujete nema ispravan format!");
                 return;
             }
             String[] firstRow = result.get(0);
@@ -181,7 +181,7 @@ public class DodajKvizAkt extends AppCompatActivity {
             for (int i = 0; i < brojPitanja; i++) {
                 String[] row = result.get(i + 1);
                 if (row.length < 4) {
-                    showAlert("Neispravan format datoteke!");
+                    showAlert("Datoteka kviza kojeg importujete nema ispravan format!");
                     return;
                 }
                 String nazivPitanja = row[0];
@@ -208,11 +208,19 @@ public class DodajKvizAkt extends AppCompatActivity {
                 ArrayList<String> odgovori = new ArrayList<>();
                 String tacanOdgovor = null;
                 for (int j = 3; j < row.length; j++) {
+                    if (odgovori.contains(row[j])) {
+                        showAlert("Kviz kojeg importujete nije ispravan postoji ponavljanje odgovora!");
+                        return;
+                    }
                     if (j - 3 == indexTacOdgovora)
                         tacanOdgovor = row[j];
                     odgovori.add(row[j]);
                 }
                 Pitanje pitanje = new Pitanje(nazivPitanja, nazivPitanja, odgovori, tacanOdgovor);
+                if (tempPitanja.contains(pitanje)) {
+                    showAlert("Kviz nije ispravan postoje dva pitanja sa istim nazivom!");
+                    return;
+                }
                 tempPitanja.add(pitanje);
             }
             quizName.setText(nazivKviza);

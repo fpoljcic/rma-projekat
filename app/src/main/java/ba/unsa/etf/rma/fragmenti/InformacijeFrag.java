@@ -18,7 +18,7 @@ public class InformacijeFrag extends Fragment {
     private Button button;
     private String nazivKviza;
     private int brojPitanja, brojTacnih = 0, brojPreostalih;
-    private float procenatTacnih = 0.0F;
+    private double procenatTacnih = 0.0;
 
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
@@ -44,7 +44,10 @@ public class InformacijeFrag extends Fragment {
         if (getArguments() != null) {
             nazivKviza = getArguments().getString(ARG_PARAM1);
             brojPitanja = getArguments().getInt(ARG_PARAM2);
-            brojPreostalih = brojPitanja;
+            if (brojPitanja == 0)
+                brojPreostalih = 0;
+            else
+                brojPreostalih = brojPitanja - 1;
         }
     }
 
@@ -101,14 +104,17 @@ public class InformacijeFrag extends Fragment {
 
     public boolean updateData(boolean correct) {
         brojPreostalih--;
-        brPreostalihPitanjaField.setText(String.valueOf(brojPreostalih));
+        if (brojPreostalih == -1)
+            brPreostalihPitanjaField.setText("0");
+        else
+            brPreostalihPitanjaField.setText(String.valueOf(brojPreostalih));
         if (correct) {
             brojTacnih++;
             brojTacnihPitanjaField.setText(String.valueOf(brojTacnih));
         }
-        procenatTacnih = (float) brojTacnih / (brojPitanja - brojPreostalih);
+        procenatTacnih = ((double) brojTacnih / (brojPitanja - 1 - brojPreostalih)) * 100;
         procenatTacnihField.setText(String.valueOf(procenatTacnih));
-        return brojPreostalih == 0;
+        return brojPreostalih == -1;
     }
 
     public interface OnFragmentInteractionListener {

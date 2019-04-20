@@ -82,7 +82,7 @@ public class GridAdpater extends BaseAdapter {
                 holder.ikonaKviza.setImageResource(res.getIdentifier("ba.unsa.etf.rma:drawable/generic", null, null));
                 return view;
             }
-            final Context context = this.activity;
+            final Context context = activity;
             final IconHelper iconHelper = IconHelper.getInstance(context);
             iconHelper.addLoadCallback(new IconHelper.LoadCallback() {
                 @Override
