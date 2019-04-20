@@ -92,21 +92,6 @@ public class DetailFrag extends Fragment {
                         prikazaniKvizovi.remove(postojeciKviz);
                 }
                 gridAdpater.notifyDataSetChanged();
-
-                /* -------- Ovo je potrebno dodat radi bug-a oko ikone... --------
-
-                prikazaniKvizovi.remove(null);
-                gridAdpater.notifyDataSetChanged();
-                Handler handler = new Handler();
-                handler.postDelayed(new Runnable() {
-                    public void run() {
-                        prikazaniKvizovi.add(null);
-                        gridAdpater.notifyDataSetChanged();
-                    }
-                }, 600);
-
-                   -------- ...bug nije toliko bitan pa je ovaj dio izostavljen. -------- */
-
             } else if (resultCode == RESULT_CANCELED) {
                 // Pritisnuto back dugme
                 ArrayList<Kategorija> noveKategorije = (ArrayList<Kategorija>) data.getSerializableExtra("noveKategorije");

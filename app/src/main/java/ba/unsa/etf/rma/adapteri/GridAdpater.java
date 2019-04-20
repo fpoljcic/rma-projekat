@@ -73,24 +73,26 @@ public class GridAdpater extends BaseAdapter {
         final Kviz object = (Kviz) data.get(position);
         if (object == null) {
             holder.nazivKviza.setText(R.string.dodaj_kviz);
-            holder.ikonaKviza.setImageResource(res.getIdentifier("ba.unsa.etf.rma:drawable/add", null, null));
+            holder.ikonaKviza.setImageResource(R.drawable.add);
             holder.brojPitanja.setText("");
         } else {
             holder.nazivKviza.setText(object.getNaziv());
             holder.brojPitanja.setText(String.valueOf(object.getPitanja().size()));
             if (object.getKategorija() == null) {
-                holder.ikonaKviza.setImageResource(res.getIdentifier("ba.unsa.etf.rma:drawable/generic", null, null));
+                holder.ikonaKviza.setImageResource(R.drawable.generic);
                 return view;
             }
-            final Context context = activity;
-            final IconHelper iconHelper = IconHelper.getInstance(context);
+            final IconHelper iconHelper = IconHelper.getInstance(activity);
             iconHelper.addLoadCallback(new IconHelper.LoadCallback() {
                 @Override
                 public void onDataLoaded() {
                     // This happens on UI thread, and is guaranteed to be called.
                     String id = object.getKategorija().getId();
                     Icon icon = iconHelper.getIcon(Integer.valueOf(id));
-                    holder.ikonaKviza.setImageDrawable(icon.getDrawable(context));
+                    if (holder.nazivKviza.getText().toString().equals(activity.getString(R.string.dodaj_kviz)))
+                        holder.ikonaKviza.setImageResource(R.drawable.add);
+                    else
+                        holder.ikonaKviza.setImageDrawable(icon.getDrawable(activity));
                 }
             });
 

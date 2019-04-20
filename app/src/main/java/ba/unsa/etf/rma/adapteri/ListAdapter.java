@@ -71,11 +71,11 @@ public class ListAdapter extends BaseAdapter {
         final Kviz object = (Kviz) data.get(position);
         if (object == null) {
             holder.name.setText(R.string.dodaj_kviz);
-            holder.icon.setImageResource(res.getIdentifier("ba.unsa.etf.rma:drawable/add", null, null));
+            holder.icon.setImageResource(R.drawable.add);
         } else {
             holder.name.setText(object.getNaziv());
             if (object.getKategorija() == null) {
-                holder.icon.setImageResource(res.getIdentifier("ba.unsa.etf.rma:drawable/generic", null, null));
+                holder.icon.setImageResource(R.drawable.generic);
                 return view;
             }
             final Context context = this.activity;
@@ -86,7 +86,10 @@ public class ListAdapter extends BaseAdapter {
                     // This happens on UI thread, and is guaranteed to be called.
                     String id = object.getKategorija().getId();
                     Icon icon = iconHelper.getIcon(Integer.valueOf(id));
-                    holder.icon.setImageDrawable(icon.getDrawable(context));
+                    if (holder.name.getText().toString().equals(activity.getString(R.string.dodaj_kviz)))
+                        holder.icon.setImageResource(R.drawable.add);
+                    else
+                        holder.icon.setImageDrawable(icon.getDrawable(context));
                 }
             });
 
