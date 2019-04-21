@@ -141,8 +141,10 @@ public class KvizoviAkt extends AppCompatActivity implements ListFrag.OnFragment
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (siriEkran)
+        if (findViewById(R.id.detailPlace) != null) {
+            detailFrag.onActivityResult(requestCode, resultCode, data);
             return;
+        }
         if (requestCode == 1) {
             if (resultCode == RESULT_OK) {
                 Kviz kviz = (Kviz) data.getSerializableExtra("kviz");
