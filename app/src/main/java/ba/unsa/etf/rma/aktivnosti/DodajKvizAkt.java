@@ -32,6 +32,7 @@ import java.net.URL;
 import java.util.ArrayList;
 
 import ba.unsa.etf.rma.R;
+import ba.unsa.etf.rma.klase.FirebaseDAO;
 import ba.unsa.etf.rma.klase.Kategorija;
 import ba.unsa.etf.rma.klase.Kviz;
 import ba.unsa.etf.rma.klase.Pitanje;
@@ -106,7 +107,7 @@ public class DodajKvizAkt extends AppCompatActivity {
                 replyIntent.putExtra("kviz", kviz);
                 kategorije.remove(kategorije.size() - 1);
                 replyIntent.putExtra("noveKategorije", noveKategorije);
-                syncFirestore(kviz);
+                FirebaseDAO.getInstance().dodajKviz(kviz);
                 setResult(RESULT_OK, replyIntent);
                 finish();
             }
@@ -142,60 +143,6 @@ public class DodajKvizAkt extends AppCompatActivity {
         });
     }
 
-    private void syncFirestore(Kviz kviz) {
-        AsyncTask<String, Integer, Void> klasa = new AsyncTask<String, Integer, Void>() {
-            @Override
-            protected Void doInBackground(String... strings) {
-                InputStream is = getResources().openRawResource(R.raw.secret);
-                GoogleCredential credentials = null;
-                try {
-                    credentials = GoogleCredential.fromStream(is).createScoped(Lists.newArrayList("https://www.googleapis.com/auth/datastore"));
-                    credentials.refreshToken();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                String TOKEN = credentials.getAccessToken();
-                String urlString = "https://firestore.googleapis.com/v1/projects/rma19poljcicfaris20/databases/(default)/documents/kviz?access_token=" + TOKEN;
-                URL url = null;
-                try {
-                    url = new URL(urlString);
-                    HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
-                    urlConnection.setRequestProperty("Authorization", "Bearer " + TOKEN);
-                    InputStream in = new BufferedInputStream((urlConnection.getInputStream()));
-                    String rezultat = convertStreamToString(in);
-                    JSONObject jo = new JSONObject(rezultat);
-                    JSONObject naziv = jo.getJSONObject("naziv");
-
-                } catch (MalformedURLException e) {
-                    e.printStackTrace();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-                return null;
-            }
-        };
-
-        // https://firestore.googleapis.com/v1/projects/rma19poljcicfaris20/databases/(default)/documents/kviz?access_token=
-        klasa.execute();
-    }
-
-    private String convertStreamToString(InputStream is) {
-        BufferedReader reader = new BufferedReader(new InputStreamReader(is));
-        StringBuilder sb = new StringBuilder();
-        String line = null;
-        try {
-            while ((line = reader.readLine()) != null) {
-                sb.append(line + "\n");
-            }
-        } catch (IOException e) {} finally {
-            try {
-                is.close();
-            } catch (IOException e) {}
-        }
-        return sb.toString();
-    }
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
