@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import ba.unsa.etf.rma.R;
 import ba.unsa.etf.rma.fragmenti.DetailFrag;
 import ba.unsa.etf.rma.fragmenti.ListFrag;
+import ba.unsa.etf.rma.klase.FirebaseDAO;
 import ba.unsa.etf.rma.klase.Kategorija;
 import ba.unsa.etf.rma.klase.Kviz;
 import ba.unsa.etf.rma.adapteri.ListAdapter;
@@ -36,6 +37,7 @@ public class KvizoviAkt extends AppCompatActivity implements ListFrag.OnFragment
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        FirebaseDAO.getInstance().kvizovi(null, this);
         int index = 0;
         if (savedInstanceState != null) {
             index = restoreData(savedInstanceState);
@@ -47,6 +49,15 @@ public class KvizoviAkt extends AppCompatActivity implements ListFrag.OnFragment
             setListeners();
             categorySpinner.setSelection(index);
         }
+    }
+
+    public void addKvizovi(ArrayList<Kviz> kvizovi) {
+        for (Kviz kviz : kvizovi) {
+            this.kvizovi.add(kviz);
+            if (getSelectedKategorija().getNaziv().equals("Svi") || kviz.getKategorija() != null && getSelectedKategorija().equals(kviz.getKategorija()))
+                prikazaniKvizovi.add(0, kviz);
+        }
+        listAdapter.notifyDataSetChanged();
     }
 
     @Override
@@ -156,11 +167,13 @@ public class KvizoviAkt extends AppCompatActivity implements ListFrag.OnFragment
                 categoryAdapter.notifyDataSetChanged();
                 if (pozicija == -1) {
                     kvizovi.add(kviz);
+                    FirebaseDAO.getInstance().dodajKviz(kviz);
                     if (((Kategorija) categorySpinner.getSelectedItem()).getNaziv().equals("Svi") || (kviz.getKategorija() != null && kviz.getKategorija().equals(categorySpinner.getSelectedItem())))
                         prikazaniKvizovi.add(prikazaniKvizovi.size() - 1, kviz);
                 } else {
                     Kviz postojeciKviz = prikazaniKvizovi.get(pozicija);
                     int pos = kvizovi.indexOf(postojeciKviz);
+                    FirebaseDAO.getInstance().azuirajKviz(postojeciKviz, kviz);
                     postojeciKviz.setNaziv(kviz.getNaziv());
                     postojeciKviz.setPitanja(kviz.getPitanja());
                     postojeciKviz.setKategorija(kviz.getKategorija());
