@@ -1,6 +1,8 @@
 package ba.unsa.etf.rma.fragmenti;
 
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.Fragment;
@@ -9,6 +11,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -28,6 +31,7 @@ public class PitanjeFrag extends Fragment {
     private static final String ARG_PARAM1 = "param1";
     private OnFragmentInteractionListener callback;
     private boolean isActive = false;
+    private String ime;
 
     public PitanjeFrag() {
         // Required empty public constructor
@@ -104,8 +108,10 @@ public class PitanjeFrag extends Fragment {
                                 rightText.setBackgroundResource(R.color.colorDefaultBackground);
                             selectedText.setBackgroundResource(R.color.colorDefaultBackground);
                             if (quizEnd) {
+                                // Zavrsio sa kvizom
                                 tekstPitanjaField.setText("Kviz je završen!");
                                 odgovori.clear();
+                                showPromptDialog(getContext());
                             } else {
                                 pozicijaPitanja++;
                                 tekstPitanjaField.setText(pitanja.get(pozicijaPitanja).getTekstPitanja());
@@ -120,6 +126,24 @@ public class PitanjeFrag extends Fragment {
                 }
             }
         });
+    }
+
+    private void showPromptDialog(Context context) {
+        final EditText editText = new EditText(context);
+        AlertDialog dialog = new AlertDialog.Builder(context)
+                .setTitle("Unesite vaše ime")
+                .setMessage("Ime:")
+                .setView(editText)
+                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        ime = String.valueOf(editText.getText());
+                        // Ukloni PitanjeFrag dodati RangLista
+                    }
+                })
+                .setNegativeButton("Cancel", null)
+                .create();
+        dialog.show();
     }
 
     @Override
