@@ -21,7 +21,7 @@ import ba.unsa.etf.rma.klase.Kategorija;
 import ba.unsa.etf.rma.klase.Kviz;
 import ba.unsa.etf.rma.adapteri.ListAdapter;
 
-public class KvizoviAkt extends AppCompatActivity implements ListFrag.OnFragmentInteractionListener, DetailFrag.OnFragmentInteractionListener {
+public class KvizoviAkt extends AppCompatActivity implements ListFrag.OnFragmentInteractionListener, DetailFrag.OnFragmentInteractionListener, FirebaseDAO.KvizInterface, FirebaseDAO.KategorijaInterface {
     private Spinner categorySpinner;
     private ListView quizList;
     private ArrayList<Kviz> kvizovi = new ArrayList<>();
@@ -38,6 +38,7 @@ public class KvizoviAkt extends AppCompatActivity implements ListFrag.OnFragment
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         FirebaseDAO.getInstance().kvizovi(null, this);
+        FirebaseDAO.getInstance().kategorije(this);
         int index = 0;
         if (savedInstanceState != null) {
             index = restoreData(savedInstanceState);
@@ -51,6 +52,7 @@ public class KvizoviAkt extends AppCompatActivity implements ListFrag.OnFragment
         }
     }
 
+    @Override
     public void addKvizovi(ArrayList<Kviz> kvizovi) {
         for (Kviz kviz : kvizovi) {
             this.kvizovi.add(kviz);
@@ -159,21 +161,22 @@ public class KvizoviAkt extends AppCompatActivity implements ListFrag.OnFragment
         if (requestCode == 1) {
             if (resultCode == RESULT_OK) {
                 Kviz kviz = (Kviz) data.getSerializableExtra("kviz");
+                ArrayList<String> idPitanja = data.getStringArrayListExtra("idPitanja");
                 int pozicija = data.getIntExtra("pozicija", -1);
-                if (kvizovi.contains(kviz) && kvizovi.indexOf(kviz) != pozicija)
+                if (kvizovi.contains(kviz) && pozicija == -1)
                     return;
                 ArrayList<Kategorija> noveKategorije = (ArrayList<Kategorija>) data.getSerializableExtra("noveKategorije");
                 kategorije.addAll(noveKategorije);
                 categoryAdapter.notifyDataSetChanged();
                 if (pozicija == -1) {
                     kvizovi.add(kviz);
-                    FirebaseDAO.getInstance().dodajKviz(kviz);
+                    FirebaseDAO.getInstance().dodajKviz(kviz, idPitanja);
                     if (((Kategorija) categorySpinner.getSelectedItem()).getNaziv().equals("Svi") || (kviz.getKategorija() != null && kviz.getKategorija().equals(categorySpinner.getSelectedItem())))
                         prikazaniKvizovi.add(prikazaniKvizovi.size() - 1, kviz);
                 } else {
                     Kviz postojeciKviz = prikazaniKvizovi.get(pozicija);
                     int pos = kvizovi.indexOf(postojeciKviz);
-                    FirebaseDAO.getInstance().azuirajKviz(postojeciKviz, kviz);
+                    FirebaseDAO.getInstance().azuirajKviz(postojeciKviz.getNaziv(), kviz, idPitanja);
                     postojeciKviz.setNaziv(kviz.getNaziv());
                     postojeciKviz.setPitanja(kviz.getPitanja());
                     postojeciKviz.setKategorija(kviz.getKategorija());
@@ -261,5 +264,14 @@ public class KvizoviAkt extends AppCompatActivity implements ListFrag.OnFragment
             this.kategorije.addAll(kategorije);
             categoryAdapter.notifyDataSetChanged();
         }
+    }
+
+    @Override
+    public void addKategorijeFirebase(ArrayList<Kategorija> kategorije) {
+        for (Kategorija kategorija : kategorije) {
+            if (!this.kategorije.contains(kategorija))
+                this.kategorije.add(kategorija);
+        }
+        categoryAdapter.notifyDataSetChanged();
     }
 }

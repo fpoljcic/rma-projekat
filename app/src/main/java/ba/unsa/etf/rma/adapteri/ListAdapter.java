@@ -88,7 +88,7 @@ public class ListAdapter extends BaseAdapter {
                     Icon icon = iconHelper.getIcon(Integer.valueOf(id));
                     if (holder.name.getText().toString().equals(activity.getString(R.string.dodaj_kviz)))
                         holder.icon.setImageResource(R.drawable.add);
-                    else
+                    else if (icon != null)
                         holder.icon.setImageDrawable(icon.getDrawable(context));
                 }
             });

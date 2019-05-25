@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import com.maltaisn.icondialog.Icon;
 import com.maltaisn.icondialog.IconDialog;
@@ -56,7 +57,8 @@ public class DodajKategorijuAkt extends AppCompatActivity implements IconDialog.
             @Override
             public void onClick(View view) {
                 boolean errorPresent = false;
-                if (categoryNameField.getText().toString().isEmpty() || kategorije.contains(new Kategorija(categoryNameField.getText().toString(), "0"))) {
+                boolean vecPostoji = kategorije.contains(new Kategorija(categoryNameField.getText().toString(), "0"));
+                if (categoryNameField.getText().toString().isEmpty() || vecPostoji) {
                     errorPresent = true;
                     categoryNameField.setBackgroundResource(R.color.colorError);
                 } else
@@ -72,6 +74,8 @@ public class DodajKategorijuAkt extends AppCompatActivity implements IconDialog.
                     setResult(RESULT_OK, replyIntent);
                     finish();
                 }
+                if (vecPostoji)
+                    Toast.makeText(getApplicationContext(), "Unesena kategorija već postoji!", Toast.LENGTH_SHORT).show();
             }
         });
     }

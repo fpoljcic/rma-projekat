@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Pair;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -21,11 +22,12 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 
 import ba.unsa.etf.rma.R;
+import ba.unsa.etf.rma.klase.FirebaseDAO;
 import ba.unsa.etf.rma.klase.Kategorija;
 import ba.unsa.etf.rma.klase.Kviz;
 import ba.unsa.etf.rma.klase.Pitanje;
 
-public class DodajKvizAkt extends AppCompatActivity {
+public class DodajKvizAkt extends AppCompatActivity implements FirebaseDAO.PitanjeInterface {
     private Spinner categorySpinner;
     private EditText quizName;
     private ListView questionsList, optionalQuestionsList;
@@ -36,6 +38,7 @@ public class DodajKvizAkt extends AppCompatActivity {
     private ArrayList<Kategorija> kategorije = new ArrayList<>();
     private ArrayList<Kviz> kvizovi = new ArrayList<>();
     private ArrayList<Kategorija> noveKategorije = new ArrayList<>();
+    private ArrayList<Pair<String, Pitanje>> idPitanja = new ArrayList<>();
     private int pozicija = -1;
     private Kviz kviz;
     private Kategorija dodajKategoriju;
@@ -95,6 +98,14 @@ public class DodajKvizAkt extends AppCompatActivity {
                 replyIntent.putExtra("kviz", kviz);
                 kategorije.remove(kategorije.size() - 1);
                 replyIntent.putExtra("noveKategorije", noveKategorije);
+                ArrayList<String> idPitanjaNiz = new ArrayList<>();
+                for (Pitanje pitanje : pitanja) {
+                    for (Pair<String, Pitanje> pair : idPitanja) {
+                        if (pair.second.equals(pitanje))
+                            idPitanjaNiz.add(pair.first);
+                    }
+                }
+                replyIntent.putStringArrayListExtra("idPitanja", idPitanjaNiz);
                 setResult(RESULT_OK, replyIntent);
                 finish();
             }
@@ -248,6 +259,7 @@ public class DodajKvizAkt extends AppCompatActivity {
         if (pitanja.contains(pitanje))
             return;
         pitanja.add(pitanja.size() - 1, pitanje);
+        FirebaseDAO.getInstance().dodajPitanje(pitanje, this);
         listAdapter.notifyDataSetChanged();
     }
 
@@ -257,6 +269,7 @@ public class DodajKvizAkt extends AppCompatActivity {
         noveKategorije.add(kategorija);
         categorySpinner.setSelection(kategorije.size() - 2);
         categoryAdapter.notifyDataSetChanged();
+        FirebaseDAO.getInstance().dodajKategoriju(kategorija);
     }
 
     private ArrayList<String[]> readCsv(Uri uri) throws IOException {
@@ -317,6 +330,7 @@ public class DodajKvizAkt extends AppCompatActivity {
 
         optListAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, mogucaPitanja);
         optionalQuestionsList.setAdapter(optListAdapter);
+        FirebaseDAO.getInstance().pitanja(kviz, this);
 
         int layoutID = android.R.layout.simple_list_item_1;
         kategorije = (ArrayList<Kategorija>) intent.getSerializableExtra("kategorija");
@@ -337,5 +351,20 @@ public class DodajKvizAkt extends AppCompatActivity {
         backIntent.putExtra("noveKategorije", noveKategorije);
         setResult(RESULT_CANCELED, backIntent);
         finish();
+    }
+
+    @Override
+    public void getPitanjeId(Pair<String, Pitanje> pair) {
+        idPitanja.add(pair);
+    }
+
+    @Override
+    public void addPitanja(ArrayList<Pair<String, Pitanje>> pitanja) {
+        for (Pair<String, Pitanje> pair : pitanja) {
+            if (!this.pitanja.contains(pair.second))
+                mogucaPitanja.add(pair.second);
+        }
+        idPitanja.addAll(pitanja);
+        optListAdapter.notifyDataSetChanged();
     }
 }
