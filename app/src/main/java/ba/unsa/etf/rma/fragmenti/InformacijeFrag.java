@@ -29,6 +29,10 @@ public class InformacijeFrag extends Fragment {
         // Required empty public constructor
     }
 
+    public double getProcenatTacnih() {
+        return procenatTacnih;
+    }
+
     public static InformacijeFrag newInstance(String nazivKviza, int brojPitanja) {
         InformacijeFrag fragment = new InformacijeFrag();
         Bundle args = new Bundle();

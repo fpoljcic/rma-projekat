@@ -7,15 +7,20 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
 
+import java.util.ArrayList;
+
 import ba.unsa.etf.rma.R;
 import ba.unsa.etf.rma.fragmenti.InformacijeFrag;
 import ba.unsa.etf.rma.fragmenti.PitanjeFrag;
+import ba.unsa.etf.rma.fragmenti.RangLista;
+import ba.unsa.etf.rma.klase.FirebaseDAO;
 import ba.unsa.etf.rma.klase.Kviz;
 
-public class IgrajKvizAkt extends AppCompatActivity implements InformacijeFrag.OnFragmentInteractionListener, PitanjeFrag.OnFragmentInteractionListener {
+public class IgrajKvizAkt extends AppCompatActivity implements InformacijeFrag.OnFragmentInteractionListener, PitanjeFrag.OnFragmentInteractionListener, FirebaseDAO.RangListaInterface {
     private Kviz kviz;
     private PitanjeFrag pitanjeFrag;
     private InformacijeFrag informacijeFrag;
+    private RangLista rangLista;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,5 +67,30 @@ public class IgrajKvizAkt extends AppCompatActivity implements InformacijeFrag.O
     @Override
     public boolean onAnswerListItemClick(boolean correct) {
         return informacijeFrag.updateData(correct);
+    }
+
+    @Override
+    public void onQuizFinish() {
+        FirebaseDAO.getInstance().rangLista(kviz, this);
+    }
+
+    @Override
+    public String vratiNazivKviza() {
+        return kviz.getNaziv();
+    }
+
+    @Override
+    public double vratiProcenatTacnih() {
+        return informacijeFrag.getProcenatTacnih();
+    }
+
+    @Override
+    public void addIgraci(ArrayList<String> igraci) {
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        ukloniFragment(fragmentManager, R.id.pitanjePlace);
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        rangLista = RangLista.newInstance(igraci);
+        fragmentTransaction.add(R.id.pitanjePlace, rangLista);
+        fragmentTransaction.commit();
     }
 }

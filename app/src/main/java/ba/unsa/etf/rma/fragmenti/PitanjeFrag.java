@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 
 import ba.unsa.etf.rma.R;
+import ba.unsa.etf.rma.klase.FirebaseDAO;
 import ba.unsa.etf.rma.klase.Pitanje;
 
 public class PitanjeFrag extends Fragment {
@@ -136,14 +137,25 @@ public class PitanjeFrag extends Fragment {
                 .setView(editText)
                 .setPositiveButton("OK", new DialogInterface.OnClickListener() {
                     @Override
-                    public void onClick(DialogInterface dialog, int which) {
+                    public void onClick(DialogInterface dialog, int i) {
                         ime = String.valueOf(editText.getText());
-                        // Ukloni PitanjeFrag dodati RangLista
+                        FirebaseDAO.getInstance().dodajIgraca(callback.vratiNazivKviza(), ime, callback.vratiProcenatTacnih());
+                        addRangListaFragment();
                     }
                 })
-                .setNegativeButton("Cancel", null)
+                .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int i) {
+                        addRangListaFragment();
+                    }
+                })
                 .create();
         dialog.show();
+    }
+
+    private void addRangListaFragment() {
+        // Ukloni PitanjeFrag dodati RangLista
+        callback.onQuizFinish();
     }
 
     @Override
@@ -164,5 +176,8 @@ public class PitanjeFrag extends Fragment {
 
     public interface OnFragmentInteractionListener {
         boolean onAnswerListItemClick(boolean correct);
+        void onQuizFinish();
+        String vratiNazivKviza();
+        double vratiProcenatTacnih();
     }
 }

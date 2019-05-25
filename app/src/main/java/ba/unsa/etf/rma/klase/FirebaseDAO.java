@@ -157,7 +157,7 @@ public class FirebaseDAO {
                         Pitanje temp = new Pitanje();
                         temp.setNaziv(nazivPitanja);
                         //if (kviz.getPitanja().contains(temp))
-                            //continue;
+                        //continue;
                         String name = pitanjeJson.getString("name");
                         String idPitanja = name.substring(name.lastIndexOf("/") + 1);
                         pitanje.setNaziv(nazivPitanja);
@@ -172,6 +172,156 @@ public class FirebaseDAO {
                         JSONObject indexTacnog = fields.getJSONObject("indexTacnog");
                         pitanje.setTacan(pitanje.getOdgovori().get(indexTacnog.getInt("integerValue")));
                         pitanja.add(new Pair<>(idPitanja, pitanje));
+                    }
+                } catch (IOException | JSONException greska) {
+                    greska.printStackTrace();
+                }
+                return null;
+            }
+        }.execute();
+    }
+
+    @SuppressLint("StaticFieldLeak")
+    public void dodajIgraca(final String nazivKviza, final String ime, final double procenatTacnih) {
+        new AsyncTask<String, Integer, Void>() {
+            @Override
+            protected Void doInBackground(String... strings) {
+                InputStream inputStream = getClass().getResourceAsStream("/res/raw/secret.json");
+                GoogleCredential credentials;
+                try {
+                    credentials = GoogleCredential.fromStream(inputStream).createScoped(Lists.newArrayList("https://www.googleapis.com/auth/datastore"));
+                    credentials.refreshToken();
+                    String token = credentials.getAccessToken();
+                    String urlString = "https://firestore.googleapis.com/v1/projects/rma19poljcicfaris20/databases/(default)/documents/Rangliste?access_token=";
+
+                    URL url = new URL(urlString + URLEncoder.encode(token, "UTF-8"));
+                    HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
+                    urlConnection.setDoOutput(true);
+                    urlConnection.setRequestMethod("POST");
+                    urlConnection.setRequestProperty("Content-Type", "application/json");
+                    urlConnection.setRequestProperty("Accept", "application/json");
+
+
+                    String dokument = "{ \"fields\": {";
+                    dokument += "\"nazivKviza\":{\"stringValue\":\"" + nazivKviza + "\"}," +
+                            "\"lista\":{\"mapValue\":\"\"fields\":{\"pozicija\":{\"integerValue\":\"" + getPozicijaIgraca(nazivKviza, procenatTacnih) + "\"}," +
+                            "\"igrac\":{\"mapValue\":{\"fields\":{\"imeIgraca\":{\"stringValue\":\"" + ime +
+                            "\",\"procenatTacnih\":{\"integerValue\":\"" + procenatTacnih + "\"}}}}}}}}";
+                    try (OutputStream os = urlConnection.getOutputStream()) {
+                        byte[] input = dokument.getBytes("utf-8");
+                        os.write(input, 0, input.length);
+                    }
+                    int code = urlConnection.getResponseCode();
+
+                } catch (IOException greska) {
+                    greska.printStackTrace();
+                }
+                return null;
+            }
+        }.execute();
+    }
+
+    private int getPozicijaIgraca(String nazivKvizaString, double procenatTacnihParam) {
+        int pozicijaIgraca = 1;
+        InputStream inputStream = getClass().getResourceAsStream("/res/raw/secret.json");
+        GoogleCredential credentials;
+        try {
+            credentials = GoogleCredential.fromStream(inputStream).createScoped(Lists.newArrayList("https://www.googleapis.com/auth/datastore"));
+            credentials.refreshToken();
+            String token = credentials.getAccessToken();
+            String urlString = "https://firestore.googleapis.com/v1/projects/rma19poljcicfaris20/databases/(default)/documents/Rangliste?access_token=";
+            URL url = new URL(urlString + URLEncoder.encode(token, "UTF-8"));
+            HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
+
+            InputStream in = new BufferedInputStream((urlConnection.getInputStream()));
+            String rezultat = convertStreamToString(in);
+            JSONObject root = new JSONObject(rezultat);
+            JSONArray documents = root.getJSONArray("documents");
+            for (int i = 0; i < documents.length(); i++) {
+                JSONObject pitanjeJson = documents.getJSONObject(i);
+                JSONObject fields = pitanjeJson.getJSONObject("fields");
+                JSONObject nazivKviza = fields.getJSONObject("nazivKviza");
+                if (!nazivKviza.getString("stringValue").equals(nazivKvizaString))
+                    continue;
+                JSONObject lista = fields.getJSONObject("lista");
+                JSONObject mapValue = lista.getJSONObject("mapValue");
+                JSONObject fields1 = mapValue.getJSONObject("fields");
+                JSONObject pozicija = fields1.getJSONObject("pozicija");
+                int pozicijaInt = pozicija.getInt("integerValue");
+                JSONObject igrac1 = fields1.getJSONObject("igrac");
+                JSONObject mapValue1 = igrac1.getJSONObject("mapValue");
+                JSONObject fields2 = mapValue1.getJSONObject("fields");
+                JSONObject imeIgraca = fields2.getJSONObject("imeIgraca");
+                String imeIgracaString = imeIgraca.getString("stringValue");
+                JSONObject procenatTacnih = fields2.getJSONObject("procenatTacnih");
+                double procenatTacnihDouble = procenatTacnih.getDouble("integerValue");
+                if (procenatTacnihDouble > procenatTacnihParam)
+                    pozicijaIgraca++;
+                //else azurirajRanglistu()
+            }
+        } catch (IOException | JSONException greska) {
+            greska.printStackTrace();
+        }
+        return pozicijaIgraca;
+    }
+
+    public interface RangListaInterface {
+        void addIgraci(ArrayList<String> igraci);
+    }
+
+    @SuppressLint("StaticFieldLeak")
+    public void rangLista(final Kviz kviz, final RangListaInterface rangListaInterface) {
+        final ArrayList<String> igraci = new ArrayList<>();
+        new AsyncTask<String, Integer, Void>() {
+            @Override
+            protected void onPostExecute(Void aVoid) {
+                super.onPostExecute(aVoid);
+                rangListaInterface.addIgraci(igraci);
+            }
+
+            @Override
+            protected Void doInBackground(String... strings) {
+                InputStream inputStream = getClass().getResourceAsStream("/res/raw/secret.json");
+                GoogleCredential credentials;
+                try {
+                    credentials = GoogleCredential.fromStream(inputStream).createScoped(Lists.newArrayList("https://www.googleapis.com/auth/datastore"));
+                    credentials.refreshToken();
+                    String token = credentials.getAccessToken();
+                    String urlString = "https://firestore.googleapis.com/v1/projects/rma19poljcicfaris20/databases/(default)/documents/Rangliste?access_token=";
+                    URL url = new URL(urlString + URLEncoder.encode(token, "UTF-8"));
+                    HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
+
+                    InputStream in = new BufferedInputStream((urlConnection.getInputStream()));
+                    String rezultat = convertStreamToString(in);
+                    JSONObject root = new JSONObject(rezultat);
+                    JSONArray documents = root.getJSONArray("documents");
+                    for (int i = 0; i < documents.length(); i++) {
+                        JSONObject pitanjeJson = documents.getJSONObject(i);
+                        JSONObject fields = pitanjeJson.getJSONObject("fields");
+                        JSONObject nazivKviza = fields.getJSONObject("nazivKviza");
+                        String nazivKvizaString = nazivKviza.getString("stringValue");
+                        if (!kviz.getNaziv().equals(nazivKvizaString))
+                            continue;
+                        JSONObject lista = fields.getJSONObject("lista");
+                        JSONObject mapValue = lista.getJSONObject("mapValue");
+                        JSONObject fields1 = mapValue.getJSONObject("fields");
+                        JSONObject pozicija = fields1.getJSONObject("pozicija");
+                        int pozicijaInt = pozicija.getInt("integerValue");
+                        JSONObject igrac1 = fields1.getJSONObject("igrac");
+                        JSONObject mapValue1 = igrac1.getJSONObject("mapValue");
+                        JSONObject fields2 = mapValue1.getJSONObject("fields");
+                        JSONObject imeIgraca = fields2.getJSONObject("imeIgraca");
+                        String imeIgracaString = imeIgraca.getString("stringValue");
+                        JSONObject procenatTacnih = fields2.getJSONObject("procenatTacnih");
+                        double procenatTacnihDouble;
+                        try {
+                            procenatTacnihDouble = procenatTacnih.getDouble("doubleValue");
+                        } catch (JSONException ignored) {
+                            // rijec je o cijelom broju
+                            procenatTacnihDouble = procenatTacnih.getInt("integerValue");
+                        }
+                        String igrac = pozicijaInt + ". " + imeIgracaString + " - " + procenatTacnihDouble + "%";
+                        igraci.add(igrac);
                     }
                 } catch (IOException | JSONException greska) {
                     greska.printStackTrace();

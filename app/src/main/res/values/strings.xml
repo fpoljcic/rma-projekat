@@ -21,4 +21,5 @@
     <string name="zavrsi_kviz">Zavrsi kviz</string>
     <string name="lista_kategorija">Lista kategorija:</string>
     <string name="kviz_je_zavrsen">Kviz je završen!</string>
+    <string name="rang_lista">Rang lista</string>
 </resources>
