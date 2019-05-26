@@ -91,7 +91,7 @@ public class GridAdpater extends BaseAdapter {
                     Icon icon = iconHelper.getIcon(Integer.valueOf(id));
                     if (holder.nazivKviza.getText().toString().equals(activity.getString(R.string.dodaj_kviz)))
                         holder.ikonaKviza.setImageResource(R.drawable.add);
-                    else
+                    else if (icon != null)
                         holder.ikonaKviza.setImageDrawable(icon.getDrawable(activity));
                 }
             });

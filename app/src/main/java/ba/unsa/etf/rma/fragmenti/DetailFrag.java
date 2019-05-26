@@ -17,13 +17,14 @@ import ba.unsa.etf.rma.R;
 import ba.unsa.etf.rma.aktivnosti.DodajKvizAkt;
 import ba.unsa.etf.rma.aktivnosti.IgrajKvizAkt;
 import ba.unsa.etf.rma.adapteri.GridAdpater;
+import ba.unsa.etf.rma.klase.Firebase;
 import ba.unsa.etf.rma.klase.Kategorija;
 import ba.unsa.etf.rma.klase.Kviz;
 
 import static android.app.Activity.RESULT_CANCELED;
 import static android.app.Activity.RESULT_OK;
 
-public class DetailFrag extends Fragment {
+public class DetailFrag extends Fragment implements Firebase.KvizInterface {
     private GridView gridView;
     private ArrayList<Kviz> kvizovi = new ArrayList<>();
     private ArrayList<Kviz> prikazaniKvizovi = new ArrayList<>();
@@ -69,14 +70,14 @@ public class DetailFrag extends Fragment {
         if (requestCode == 1) {
             if (resultCode == RESULT_OK) {
                 Kviz kviz = (Kviz) data.getSerializableExtra("kviz");
+                ArrayList<String> idPitanja = data.getStringArrayListExtra("idPitanja");
                 int pozicija = data.getIntExtra("pozicija", -1);
-                if (kvizovi.contains(kviz) && kvizovi.indexOf(kviz) != pozicija)
-                    return;
                 ArrayList<Kategorija> noveKategorije = (ArrayList<Kategorija>) data.getSerializableExtra("noveKategorije");
                 callback.addKategorije(noveKategorije);
                 Kategorija kategorija = callback.getSelectedKategorija();
                 if (pozicija == -1) {
                     kvizovi.add(kviz);
+                    Firebase.dodajKviz(kviz, idPitanja);
                     if (kategorija.getNaziv().equals("Svi") || (kviz.getKategorija() != null && kviz.getKategorija().equals(kategorija)))
                         prikazaniKvizovi.add(prikazaniKvizovi.size() - 1, kviz);
                 } else {
@@ -173,9 +174,23 @@ public class DetailFrag extends Fragment {
         return kvizovi;
     }
 
+    @Override
+    public void addKvizovi(ArrayList<Kviz> kvizovi) {
+        for (Kviz kviz : kvizovi) {
+            if (!this.kvizovi.contains(kviz)) {
+                this.kvizovi.add(kviz);
+                if (callback.getSelectedKategorija().getNaziv().equals("Svi") || kviz.getKategorija() != null && callback.getSelectedKategorija().equals(kviz.getKategorija()))
+                    prikazaniKvizovi.add(0, kviz);
+            }
+        }
+        gridAdpater.notifyDataSetChanged();
+    }
+
     public interface OnFragmentInteractionListener {
         Kategorija getSelectedKategorija();
+
         ArrayList<Kategorija> getKategorije();
+
         void addKategorije(ArrayList<Kategorija> kategorije);
     }
 }

@@ -13,9 +13,10 @@ import android.widget.ListView;
 import java.util.ArrayList;
 
 import ba.unsa.etf.rma.R;
+import ba.unsa.etf.rma.klase.Firebase;
 import ba.unsa.etf.rma.klase.Kategorija;
 
-public class ListFrag extends Fragment {
+public class ListFrag extends Fragment implements Firebase.KategorijaInterface {
     private ListView listaKategorija;
     private ArrayList<Kategorija> kategorije;
     private ArrayAdapter<Kategorija> adapter;
@@ -108,6 +109,15 @@ public class ListFrag extends Fragment {
 
     public int getIndexKategorije() {
         return indexKategorije;
+    }
+
+    @Override
+    public void addKategorijeFirebase(ArrayList<Kategorija> kategorije) {
+        for (Kategorija kategorija : kategorije) {
+            if (!this.kategorije.contains(kategorija))
+                this.kategorije.add(kategorija);
+        }
+        adapter.notifyDataSetChanged();
     }
 
     public interface OnFragmentInteractionListener {

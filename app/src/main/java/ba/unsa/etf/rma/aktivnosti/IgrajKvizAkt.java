@@ -13,10 +13,10 @@ import ba.unsa.etf.rma.R;
 import ba.unsa.etf.rma.fragmenti.InformacijeFrag;
 import ba.unsa.etf.rma.fragmenti.PitanjeFrag;
 import ba.unsa.etf.rma.fragmenti.RangLista;
-import ba.unsa.etf.rma.klase.FirebaseDAO;
+import ba.unsa.etf.rma.klase.Firebase;
 import ba.unsa.etf.rma.klase.Kviz;
 
-public class IgrajKvizAkt extends AppCompatActivity implements InformacijeFrag.OnFragmentInteractionListener, PitanjeFrag.OnFragmentInteractionListener, FirebaseDAO.RangListaInterface {
+public class IgrajKvizAkt extends AppCompatActivity implements InformacijeFrag.OnFragmentInteractionListener, PitanjeFrag.OnFragmentInteractionListener, Firebase.RangListaInterface {
     private Kviz kviz;
     private PitanjeFrag pitanjeFrag;
     private InformacijeFrag informacijeFrag;
@@ -71,7 +71,7 @@ public class IgrajKvizAkt extends AppCompatActivity implements InformacijeFrag.O
 
     @Override
     public void onQuizFinish() {
-        FirebaseDAO.getInstance().rangLista(kviz, this);
+        Firebase.rangLista(kviz, this);
     }
 
     @Override

@@ -14,6 +14,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Spinner;
+import android.widget.Toast;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -22,12 +23,12 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 
 import ba.unsa.etf.rma.R;
-import ba.unsa.etf.rma.klase.FirebaseDAO;
+import ba.unsa.etf.rma.klase.Firebase;
 import ba.unsa.etf.rma.klase.Kategorija;
 import ba.unsa.etf.rma.klase.Kviz;
 import ba.unsa.etf.rma.klase.Pitanje;
 
-public class DodajKvizAkt extends AppCompatActivity implements FirebaseDAO.PitanjeInterface {
+public class DodajKvizAkt extends AppCompatActivity implements Firebase.PitanjeInterface {
     private Spinner categorySpinner;
     private EditText quizName;
     private ListView questionsList, optionalQuestionsList;
@@ -86,11 +87,16 @@ public class DodajKvizAkt extends AppCompatActivity implements FirebaseDAO.Pitan
                     quizName.setBackgroundResource(R.color.colorError);
                     return;
                 }
+                kviz.setNaziv(quizName.getText().toString());
+                if (kvizovi.contains(kviz) && pozicija == -1) {
+                    quizName.setBackgroundResource(R.color.colorError);
+                    Toast.makeText(getApplicationContext(), "Postoji kviz sa datim nazivom!", Toast.LENGTH_SHORT).show();
+                    return;
+                }
                 if (((Kategorija) categorySpinner.getSelectedItem()).getNaziv().equals("Svi"))
                     kviz.setKategorija(null);
                 else
                     kviz.setKategorija((Kategorija) categorySpinner.getSelectedItem());
-                kviz.setNaziv(quizName.getText().toString());
                 pitanja.remove(pitanja.size() - 1);
                 kviz.setPitanja(pitanja);
                 Intent replyIntent = new Intent();
@@ -259,7 +265,7 @@ public class DodajKvizAkt extends AppCompatActivity implements FirebaseDAO.Pitan
         if (pitanja.contains(pitanje))
             return;
         pitanja.add(pitanja.size() - 1, pitanje);
-        FirebaseDAO.getInstance().dodajPitanje(pitanje, this);
+        Firebase.dodajPitanje(pitanje, this);
         listAdapter.notifyDataSetChanged();
     }
 
@@ -269,7 +275,7 @@ public class DodajKvizAkt extends AppCompatActivity implements FirebaseDAO.Pitan
         noveKategorije.add(kategorija);
         categorySpinner.setSelection(kategorije.size() - 2);
         categoryAdapter.notifyDataSetChanged();
-        FirebaseDAO.getInstance().dodajKategoriju(kategorija);
+        Firebase.dodajKategoriju(kategorija);
     }
 
     private ArrayList<String[]> readCsv(Uri uri) throws IOException {
@@ -330,7 +336,7 @@ public class DodajKvizAkt extends AppCompatActivity implements FirebaseDAO.Pitan
 
         optListAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, mogucaPitanja);
         optionalQuestionsList.setAdapter(optListAdapter);
-        FirebaseDAO.getInstance().pitanja(kviz, this);
+        Firebase.pitanja(kviz, this);
 
         int layoutID = android.R.layout.simple_list_item_1;
         kategorije = (ArrayList<Kategorija>) intent.getSerializableExtra("kategorija");
