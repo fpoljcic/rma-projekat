@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 
+
 public class Firebase {
     private static HttpURLConnection getHTTPConnection(String urlString) throws IOException {
         InputStream inputStream = Firebase.class.getResourceAsStream("/res/raw/secret.json");
@@ -106,16 +107,16 @@ public class Firebase {
     }
 
     public static void pitanja(final Kviz kviz, final PitanjeInterface pitanjeInterface) {
-        final ArrayList<Pair<String, Pitanje>> pitanja = new ArrayList<>();
-        new AsyncTask<String, Integer, Void>() {
+        new AsyncTask<String, Integer, ArrayList<Pair<String, Pitanje>>>() {
             @Override
-            protected void onPostExecute(Void aVoid) {
-                super.onPostExecute(aVoid);
+            protected void onPostExecute(ArrayList<Pair<String, Pitanje>> pitanja) {
+                super.onPostExecute(pitanja);
                 pitanjeInterface.addPitanja(pitanja);
             }
 
             @Override
-            protected Void doInBackground(String... strings) {
+            protected ArrayList<Pair<String, Pitanje>> doInBackground(String... strings) {
+                ArrayList<Pair<String, Pitanje>> pitanja = new ArrayList<>();
                 try {
                     String urlString = "https://firestore.googleapis.com/v1/projects/rma19poljcicfaris20/databases/(default)/documents/Pitanja?access_token=";
                     HttpURLConnection urlConnection = getHTTPConnection(urlString);
@@ -152,7 +153,7 @@ public class Firebase {
                 } catch (IOException | JSONException greska) {
                     greska.printStackTrace();
                 }
-                return null;
+                return pitanja;
             }
         }.execute();
     }
@@ -237,16 +238,95 @@ public class Firebase {
         urlConnection.getResponseCode();
     }
 
+    public interface KategorijaProvjera {
+        void kategorijaProvjeraZavrsena(boolean postoji);
+    }
+
+    public static void containtsKategoriju(final String nazivKategorije, final KategorijaProvjera kategorijaProvjera) {
+        new AsyncTask<String, Integer, Boolean>() {
+            @Override
+            protected void onPostExecute(Boolean postoji) {
+                super.onPostExecute(postoji);
+                kategorijaProvjera.kategorijaProvjeraZavrsena(postoji);
+            }
+
+            @Override
+            protected Boolean doInBackground(String... strings) {
+                String urlString = "https://firestore.googleapis.com/v1/projects/rma19poljcicfaris20/databases/(default)/documents/Kategorije?access_token=";
+                return provjeri(urlString, nazivKategorije);
+            }
+        }.execute();
+    }
+
+    public interface PitanjeProvjera {
+        void pitanjeProvjeraZavrsena(boolean postoji);
+    }
+
+    public static void containtsPitanje(final String nazivPitanja, final PitanjeProvjera pitanjeProvjera) {
+        new AsyncTask<String, Integer, Boolean>() {
+            @Override
+            protected void onPostExecute(Boolean postoji) {
+                super.onPostExecute(postoji);
+                pitanjeProvjera.pitanjeProvjeraZavrsena(postoji);
+            }
+
+            @Override
+            protected Boolean doInBackground(String... strings) {
+                String urlString = "https://firestore.googleapis.com/v1/projects/rma19poljcicfaris20/databases/(default)/documents/Pitanja?access_token=";
+                return provjeri(urlString, nazivPitanja);
+            }
+        }.execute();
+    }
+
+    public interface KvizProvjera {
+        void kvizProvjeraZavrsena(boolean postoji);
+    }
+
+    public static void containtsKviz(final String nazivKviza, final KvizProvjera kvizProvjera) {
+        new AsyncTask<String, Integer, Boolean>() {
+            @Override
+            protected void onPostExecute(Boolean postoji) {
+                super.onPostExecute(postoji);
+                kvizProvjera.kvizProvjeraZavrsena(postoji);
+            }
+
+            @Override
+            protected Boolean doInBackground(String... strings) {
+                String urlString = "https://firestore.googleapis.com/v1/projects/rma19poljcicfaris20/databases/(default)/documents/Kvizovi?access_token=";
+                return provjeri(urlString, nazivKviza);
+            }
+        }.execute();
+    }
+
+    private static boolean provjeri(String urlString, String nazivString) {
+        try {
+            HttpURLConnection urlConnection = getHTTPConnection(urlString);
+            InputStream in = new BufferedInputStream((urlConnection.getInputStream()));
+            String rezultat = convertStreamToString(in);
+            JSONObject root = new JSONObject(rezultat);
+            JSONArray documents = root.getJSONArray("documents");
+            for (int i = 0; i < documents.length(); i++) {
+                JSONObject kvizJson = documents.getJSONObject(i);
+                JSONObject fields = kvizJson.getJSONObject("fields");
+                JSONObject naziv = fields.getJSONObject("naziv");
+                if (naziv.getString("stringValue").equals(nazivString))
+                    return true;
+            }
+        } catch (IOException | JSONException greska) {
+            greska.printStackTrace();
+        }
+        return false;
+    }
+
     public interface RangListaInterface {
         void addIgraci(ArrayList<String> igraci);
     }
 
     public static void rangLista(final Kviz kviz, final RangListaInterface rangListaInterface) {
-        final ArrayList<String> igraci = new ArrayList<>();
-        new AsyncTask<String, Integer, Void>() {
+        new AsyncTask<String, Integer, ArrayList<String>>() {
             @Override
-            protected void onPostExecute(Void aVoid) {
-                super.onPostExecute(aVoid);
+            protected void onPostExecute(ArrayList<String> igraci) {
+                super.onPostExecute(igraci);
                 Collections.sort(igraci, new Comparator<String>() {
                     @Override
                     public int compare(String s1, String s2) {
@@ -259,7 +339,8 @@ public class Firebase {
             }
 
             @Override
-            protected Void doInBackground(String... strings) {
+            protected ArrayList<String> doInBackground(String... strings) {
+                ArrayList<String> igraci = new ArrayList<>();
                 try {
                     String urlString = "https://firestore.googleapis.com/v1/projects/rma19poljcicfaris20/databases/(default)/documents/Rangliste?access_token=";
                     HttpURLConnection urlConnection = getHTTPConnection(urlString);
@@ -293,7 +374,7 @@ public class Firebase {
                 } catch (IOException | JSONException greska) {
                     greska.printStackTrace();
                 }
-                return null;
+                return igraci;
             }
         }.execute();
     }
@@ -303,16 +384,16 @@ public class Firebase {
     }
 
     public static void kategorije(final KategorijaInterface kategorijaInterface) {
-        final ArrayList<Kategorija> kategorije = new ArrayList<>();
-        new AsyncTask<String, Integer, Void>() {
+        new AsyncTask<String, Integer, ArrayList<Kategorija>>() {
             @Override
-            protected void onPostExecute(Void aVoid) {
-                super.onPostExecute(aVoid);
+            protected void onPostExecute(ArrayList<Kategorija> kategorije) {
+                super.onPostExecute(kategorije);
                 kategorijaInterface.addKategorijeFirebase(kategorije);
             }
 
             @Override
-            protected Void doInBackground(String... strings) {
+            protected ArrayList<Kategorija> doInBackground(String... strings) {
+                ArrayList<Kategorija> kategorije = new ArrayList<>();
                 try {
                     String urlString = "https://firestore.googleapis.com/v1/projects/rma19poljcicfaris20/databases/(default)/documents/Kategorije?access_token=";
                     HttpURLConnection urlConnection = getHTTPConnection(urlString);
@@ -334,7 +415,7 @@ public class Firebase {
                 } catch (IOException | JSONException greska) {
                     greska.printStackTrace();
                 }
-                return null;
+                return kategorije;
             }
         }.execute();
     }
@@ -344,16 +425,16 @@ public class Firebase {
     }
 
     public static void kvizovi(final Kategorija kategorija, final KvizInterface kvizInterface) {
-        final ArrayList<Kviz> kvizovi = new ArrayList<>();
-        new AsyncTask<String, Integer, Void>() {
+        new AsyncTask<String, Integer, ArrayList<Kviz>>() {
             @Override
-            protected void onPostExecute(Void aVoid) {
-                super.onPostExecute(aVoid);
+            protected void onPostExecute(ArrayList<Kviz> kvizovi) {
+                super.onPostExecute(kvizovi);
                 kvizInterface.addKvizovi(kvizovi);
             }
 
             @Override
-            protected Void doInBackground(String... strings) {
+            protected ArrayList<Kviz> doInBackground(String... strings) {
+                ArrayList<Kviz> kvizovi = new ArrayList<>();
                 try {
                     String urlString = "https://firestore.googleapis.com/v1/projects/rma19poljcicfaris20/databases/(default)/documents/Kvizovi?access_token=";
                     HttpURLConnection urlConnection = getHTTPConnection(urlString);
@@ -394,7 +475,7 @@ public class Firebase {
                 } catch (IOException | JSONException greska) {
                     greska.printStackTrace();
                 }
-                return null;
+                return kvizovi;
             }
         }.execute();
     }
@@ -448,18 +529,18 @@ public class Firebase {
     }
 
     public static void dodajPitanje(final Pitanje pitanje, final PitanjeInterface pitanjeInterface) {
-        final ArrayList<String> idPair = new ArrayList<>(); // ArrayList neophodan zbog lambde
         final Pitanje pitanjePair = new Pitanje();
-        new AsyncTask<String, Integer, Void>() {
+        new AsyncTask<String, Integer, ArrayList<String>>() {
             @Override
-            protected void onPostExecute(Void aVoid) {
-                super.onPostExecute(aVoid);
+            protected void onPostExecute(ArrayList<String> idPair) {
+                super.onPostExecute(idPair);
                 Pair<String, Pitanje> pair = new Pair<>(idPair.get(0), pitanjePair);
                 pitanjeInterface.getPitanjeId(pair);
             }
 
             @Override
-            protected Void doInBackground(String... strings) {
+            protected ArrayList<String> doInBackground(String... strings) {
+                ArrayList<String> idPair = new ArrayList<>();
                 try {
                     String urlString = "https://firestore.googleapis.com/v1/projects/rma19poljcicfaris20/databases/(default)/documents/Pitanja?access_token=";
                     HttpURLConnection urlConnection = getHTTPConnection(urlString);
@@ -508,7 +589,7 @@ public class Firebase {
                 } catch (IOException | JSONException greska) {
                     greska.printStackTrace();
                 }
-                return null;
+                return idPair;
             }
         }.execute();
     }
@@ -563,58 +644,4 @@ public class Firebase {
         }
         return sb.toString();
     }
-
-    // --------------------------- Nekoristene metode ---------------------------
-    /*
-    private static String getRangListaId(String nazivKvizaString, String token) throws IOException, JSONException {
-        String urlString = "https://firestore.googleapis.com/v1/projects/rma19poljcicfaris20/databases/(default)/documents/Rangliste?access_token=";
-        URL url = new URL(urlString + URLEncoder.encode(token, "UTF-8"));
-        HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
-
-        InputStream in = new BufferedInputStream((urlConnection.getInputStream()));
-        String rezultat = convertStreamToString(in);
-        JSONObject root = new JSONObject(rezultat);
-        JSONArray documents = root.getJSONArray("documents");
-        for (int i = 0; i < documents.length(); i++) {
-            JSONObject document = documents.getJSONObject(i);
-            JSONObject fields = document.getJSONObject("fields");
-            JSONObject nazivKviza = fields.getJSONObject("nazivKviza");
-            String name = document.getString("name");
-            if (nazivKviza.getString("stringValue").equals(nazivKvizaString))
-                return name.substring(name.lastIndexOf("/") + 1);
-        }
-        return null;
-    }
-
-    private static Kviz getKviz(String idKviza) throws IOException, JSONException {
-        Kviz kviz = new Kviz();
-        String urlString = "https://firestore.googleapis.com/v1/projects/rma19poljcicfaris20/databases/(default)/documents/Kvizovi/" + idKviza + "?access_token=";
-        HttpURLConnection urlConnection = getHTTPConnection(urlString);
-        InputStream in = new BufferedInputStream((urlConnection.getInputStream()));
-        String rezultat = convertStreamToString(in);
-        JSONObject root = new JSONObject(rezultat);
-        JSONObject fields = root.getJSONObject("fields");
-        JSONObject naziv = fields.getJSONObject("naziv");
-        JSONObject idKategorije = fields.getJSONObject("idKategorije");
-        kviz.setNaziv(naziv.getString("stringValue"));
-        Kategorija kateg = getKategorija(idKategorije.getString("stringValue"));
-        kviz.setKategorija(kateg);
-        JSONObject pitanja;
-        try {
-            pitanja = fields.getJSONObject("pitanja");
-        } catch (JSONException ignored) {
-            // nema pitanja
-            return kviz;
-        }
-        JSONObject arrayValue = pitanja.getJSONObject("arrayValue");
-        JSONArray values = arrayValue.getJSONArray("values");
-        for (int j = 0; j < values.length(); j++) {
-            JSONObject jsonObject = values.getJSONObject(j);
-            String idPitanja = jsonObject.getString("stringValue");
-            Pitanje pitanje = getPitanje(idPitanja);
-            kviz.getPitanja().add(pitanje);
-        }
-        return kviz;
-    }
-    */
 }

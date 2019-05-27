@@ -8,7 +8,6 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.Toast;
 
 import com.maltaisn.icondialog.Icon;
 import com.maltaisn.icondialog.IconDialog;
@@ -16,9 +15,10 @@ import com.maltaisn.icondialog.IconDialog;
 import java.util.ArrayList;
 
 import ba.unsa.etf.rma.R;
+import ba.unsa.etf.rma.klase.Firebase;
 import ba.unsa.etf.rma.klase.Kategorija;
 
-public class DodajKategorijuAkt extends AppCompatActivity implements IconDialog.Callback {
+public class DodajKategorijuAkt extends AppCompatActivity implements IconDialog.Callback, Firebase.KategorijaProvjera {
     private EditText categoryNameField, categoryIconField;
     private Button addIconBtn, addCategoryBtn;
     private ArrayList<Kategorija> kategorije;
@@ -59,8 +59,7 @@ public class DodajKategorijuAkt extends AppCompatActivity implements IconDialog.
             @Override
             public void onClick(View view) {
                 boolean errorPresent = false;
-                boolean vecPostoji = kategorije.contains(new Kategorija(categoryNameField.getText().toString(), "0"));
-                if (categoryNameField.getText().toString().isEmpty() || vecPostoji) {
+                if (categoryNameField.getText().toString().isEmpty()) {
                     errorPresent = true;
                     categoryNameField.setBackgroundResource(R.color.colorError);
                 } else
@@ -70,16 +69,27 @@ public class DodajKategorijuAkt extends AppCompatActivity implements IconDialog.
                     categoryIconField.setBackgroundResource(R.color.colorError);
                 } else
                     categoryIconField.setBackgroundResource(R.color.colorDefaultBackground);
-                if (!errorPresent) {
-                    Intent replyIntent = new Intent();
-                    replyIntent.putExtra("novaKategorija", new Kategorija(categoryNameField.getText().toString(), categoryIconField.getText().toString()));
-                    setResult(RESULT_OK, replyIntent);
-                    finish();
-                }
-                if (vecPostoji)
-                    showAlert("Unesena kategorija već postoji!");
+                if (errorPresent)
+                    return;
+                addCategoryBtn.setText(R.string.sacekajte);
+                Firebase.containtsKategoriju(categoryNameField.getText().toString(), DodajKategorijuAkt.this);
             }
         });
+    }
+
+    @Override
+    public void kategorijaProvjeraZavrsena(boolean postoji) {
+        if (postoji) {
+            categoryNameField.setBackgroundResource(R.color.colorError);
+            showAlert("Unesena kategorija već postoji!");
+            addCategoryBtn.setText(R.string.spasi_kategoriju);
+            return;
+        }
+        categoryNameField.setBackgroundResource(R.color.colorDefaultBackground);
+        Intent replyIntent = new Intent();
+        replyIntent.putExtra("novaKategorija", new Kategorija(categoryNameField.getText().toString(), categoryIconField.getText().toString()));
+        setResult(RESULT_OK, replyIntent);
+        finish();
     }
 
     @Override

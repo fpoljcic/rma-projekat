@@ -1,5 +1,7 @@
 package ba.unsa.etf.rma.aktivnosti;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -15,8 +17,9 @@ import android.widget.TextView;
 import java.util.ArrayList;
 
 import ba.unsa.etf.rma.R;
+import ba.unsa.etf.rma.klase.Firebase;
 
-public class DodajPitanjeAkt extends AppCompatActivity {
+public class DodajPitanjeAkt extends AppCompatActivity implements Firebase.PitanjeProvjera {
     private EditText questionField, answerField;
     private Button addAnswerBtn, addRightAnswerBtn, addQuestionBtn;
     private ListView answersList;
@@ -114,15 +117,41 @@ public class DodajPitanjeAkt extends AppCompatActivity {
                     answerField.setBackgroundResource(R.color.colorError);
                 } else
                     answerField.setBackgroundResource(R.color.colorDefaultBackground);
-                if (!errorPresent) {
-                    Intent replyIntent = new Intent();
-                    replyIntent.putExtra("pitanje", questionField.getText().toString());
-                    replyIntent.putExtra("odgovori", odgovori);
-                    replyIntent.putExtra("tacanOdgovor", tacanOdgovor);
-                    setResult(RESULT_OK, replyIntent);
-                    finish();
-                }
+                if (errorPresent)
+                    return;
+                addQuestionBtn.setText(R.string.sacekajte);
+                Firebase.containtsPitanje(questionField.getText().toString(), DodajPitanjeAkt.this);
             }
         });
+    }
+
+    @Override
+    public void pitanjeProvjeraZavrsena(boolean postoji) {
+        if (postoji) {
+            questionField.setBackgroundResource(R.color.colorError);
+            showAlert("Uneseno pitanje već postoji!");
+            addQuestionBtn.setText(R.string.spasi_pitanje);
+            return;
+        }
+        questionField.setBackgroundResource(R.color.colorDefaultBackground);
+        Intent replyIntent = new Intent();
+        replyIntent.putExtra("pitanje", questionField.getText().toString());
+        replyIntent.putExtra("odgovori", odgovori);
+        replyIntent.putExtra("tacanOdgovor", tacanOdgovor);
+        setResult(RESULT_OK, replyIntent);
+        finish();
+    }
+
+    private void showAlert(String message) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage(message);
+        builder.setCancelable(false);
+        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                // nothing?
+            }
+        });
+        AlertDialog alert = builder.create();
+        alert.show();
     }
 }

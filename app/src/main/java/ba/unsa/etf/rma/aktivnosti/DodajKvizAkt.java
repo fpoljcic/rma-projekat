@@ -14,7 +14,6 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Spinner;
-import android.widget.Toast;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -28,7 +27,7 @@ import ba.unsa.etf.rma.klase.Kategorija;
 import ba.unsa.etf.rma.klase.Kviz;
 import ba.unsa.etf.rma.klase.Pitanje;
 
-public class DodajKvizAkt extends AppCompatActivity implements Firebase.PitanjeInterface {
+public class DodajKvizAkt extends AppCompatActivity implements Firebase.PitanjeInterface, Firebase.KvizProvjera {
     private Spinner categorySpinner;
     private EditText quizName;
     private ListView questionsList, optionalQuestionsList;
@@ -87,33 +86,11 @@ public class DodajKvizAkt extends AppCompatActivity implements Firebase.PitanjeI
                     quizName.setBackgroundResource(R.color.colorError);
                     return;
                 }
-                kviz.setNaziv(quizName.getText().toString());
-                if (kvizovi.contains(kviz) && pozicija == -1) {
-                    quizName.setBackgroundResource(R.color.colorError);
-                    Toast.makeText(getApplicationContext(), "Postoji kviz sa datim nazivom!", Toast.LENGTH_SHORT).show();
-                    return;
-                }
-                if (((Kategorija) categorySpinner.getSelectedItem()).getNaziv().equals("Svi"))
-                    kviz.setKategorija(null);
+                dodajKvizBtn.setText(R.string.sacekajte);
+                if (pozicija == -1)
+                    Firebase.containtsKviz(quizName.getText().toString(), DodajKvizAkt.this);
                 else
-                    kviz.setKategorija((Kategorija) categorySpinner.getSelectedItem());
-                pitanja.remove(pitanja.size() - 1);
-                kviz.setPitanja(pitanja);
-                Intent replyIntent = new Intent();
-                replyIntent.putExtra("pozicija", pozicija);
-                replyIntent.putExtra("kviz", kviz);
-                kategorije.remove(kategorije.size() - 1);
-                replyIntent.putExtra("noveKategorije", noveKategorije);
-                ArrayList<String> idPitanjaNiz = new ArrayList<>();
-                for (Pitanje pitanje : pitanja) {
-                    for (Pair<String, Pitanje> pair : idPitanja) {
-                        if (pair.second.equals(pitanje))
-                            idPitanjaNiz.add(pair.first);
-                    }
-                }
-                replyIntent.putStringArrayListExtra("idPitanja", idPitanjaNiz);
-                setResult(RESULT_OK, replyIntent);
-                finish();
+                    kvizProvjeraZavrsena(false);
             }
         });
         importKvizbtn.setOnClickListener(new View.OnClickListener() {
@@ -145,6 +122,39 @@ public class DodajKvizAkt extends AppCompatActivity implements Firebase.PitanjeI
                 // Do nothing?
             }
         });
+    }
+
+    @Override
+    public void kvizProvjeraZavrsena(boolean postoji) {
+        if (postoji) {
+            quizName.setBackgroundResource(R.color.colorError);
+            showAlert("Uneseni kviz već postoji!");
+            dodajKvizBtn.setText(R.string.dodaj_kviz);
+            return;
+        }
+        quizName.setBackgroundResource(R.color.colorDefaultBackground);
+        kviz.setNaziv(quizName.getText().toString());
+        if (((Kategorija) categorySpinner.getSelectedItem()).getNaziv().equals("Svi"))
+            kviz.setKategorija(null);
+        else
+            kviz.setKategorija((Kategorija) categorySpinner.getSelectedItem());
+        pitanja.remove(pitanja.size() - 1);
+        kviz.setPitanja(pitanja);
+        Intent replyIntent = new Intent();
+        replyIntent.putExtra("pozicija", pozicija);
+        replyIntent.putExtra("kviz", kviz);
+        kategorije.remove(kategorije.size() - 1);
+        replyIntent.putExtra("noveKategorije", noveKategorije);
+        ArrayList<String> idPitanjaNiz = new ArrayList<>();
+        for (Pitanje pitanje : pitanja) {
+            for (Pair<String, Pitanje> pair : idPitanja) {
+                if (pair.second.equals(pitanje))
+                    idPitanjaNiz.add(pair.first);
+            }
+        }
+        replyIntent.putStringArrayListExtra("idPitanja", idPitanjaNiz);
+        setResult(RESULT_OK, replyIntent);
+        finish();
     }
 
 
