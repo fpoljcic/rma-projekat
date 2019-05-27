@@ -53,7 +53,7 @@ public class Firebase {
     }
 
     private static void dodajKvizFun(final Kviz kviz, final ArrayList<String> idPitanja) throws IOException {
-        String naziv = kviz.getNaziv().replaceAll(" ", "");
+        String naziv = kviz.getNaziv().replaceAll(" ", "_");
         String urlString = "https://firestore.googleapis.com/v1/projects/rma19poljcicfaris20/databases/(default)/documents/Kvizovi?documentId=" + naziv + "&access_token=";
         HttpURLConnection urlConnection = getHTTPConnection(urlString);
         urlConnection.setDoOutput(true);
@@ -88,7 +88,7 @@ public class Firebase {
             @Override
             protected Void doInBackground(String... strings) {
                 try {
-                    String id = idKviza.replaceAll(" ", "");
+                    String id = idKviza.replaceAll(" ", "_");
                     obrisiKviz(id);
                     dodajKvizFun(noviKviz, idPitanja);
                 } catch (IOException greska) {
@@ -106,7 +106,7 @@ public class Firebase {
         urlConnection.getResponseCode();
     }
 
-    public static void pitanja(final Kviz kviz, final PitanjeInterface pitanjeInterface) {
+    public static void pitanja(final PitanjeInterface pitanjeInterface) {
         new AsyncTask<String, Integer, ArrayList<Pair<String, Pitanje>>>() {
             @Override
             protected void onPostExecute(ArrayList<Pair<String, Pitanje>> pitanja) {
@@ -131,13 +131,10 @@ public class Firebase {
                         JSONObject fields = pitanjeJson.getJSONObject("fields");
                         JSONObject naziv = fields.getJSONObject("naziv");
                         String nazivPitanja = naziv.getString("stringValue");
-                        Pitanje temp = new Pitanje();
-                        temp.setNaziv(nazivPitanja);
-                        //if (kviz.getPitanja().contains(temp))
-                        //    continue;
                         String name = pitanjeJson.getString("name");
                         String idPitanja = name.substring(name.lastIndexOf("/") + 1);
                         pitanje.setNaziv(nazivPitanja);
+                        pitanje.setTekstPitanja(nazivPitanja);
                         JSONObject odgovori;
                         odgovori = fields.getJSONObject("odgovori");
                         JSONObject arrayValue = odgovori.getJSONObject("arrayValue");
@@ -175,7 +172,7 @@ public class Firebase {
                             "\"igrac\":{\"mapValue\":{\"fields\":{\"imeIgraca\":{\"stringValue\":\"" + ime +
                             "\"},\"procenatTacnih\":{\"doubleValue\":\"" + procenatTacnih + "\"}}}}}}}}}";
                     try (OutputStream os = urlConnection.getOutputStream()) {
-                        byte[] input = dokument.getBytes("utf-8");
+                        byte[] input = dokument.getBytes(StandardCharsets.UTF_8);
                         os.write(input, 0, input.length);
                     }
                     urlConnection.getResponseCode();
@@ -196,7 +193,13 @@ public class Firebase {
         InputStream in = new BufferedInputStream((urlConnection.getInputStream()));
         String rezultat = convertStreamToString(in);
         JSONObject root = new JSONObject(rezultat);
-        JSONArray documents = root.getJSONArray("documents");
+        JSONArray documents;
+        try {
+            documents = root.getJSONArray("documents");
+        } catch (JSONException ignored) {
+            // prazna rang lista
+            return pozicijaIgraca;
+        }
         for (int i = 0; i < documents.length(); i++) {
             JSONObject document = documents.getJSONObject(i);
             JSONObject fields = document.getJSONObject("fields");
@@ -222,7 +225,7 @@ public class Firebase {
         return pozicijaIgraca;
     }
 
-    private static void postaviPoziciju(String idRangListe, int novaPozicija) throws IOException, JSONException {
+    private static void postaviPoziciju(String idRangListe, int novaPozicija) throws IOException {
         String urlString = "https://firestore.googleapis.com/v1/projects/rma19poljcicfaris20/databases/(default)/documents/Rangliste/?" + idRangListe + "&access_token=";
         HttpURLConnection urlConnection = getHTTPConnection(urlString);
         urlConnection.setDoOutput(true);
@@ -492,6 +495,7 @@ public class Firebase {
         int indTacnog = indexTacnog.getInt("integerValue");
         JSONObject naziv = fields.getJSONObject("naziv");
         pitanje.setNaziv(naziv.getString("stringValue"));
+        pitanje.setTekstPitanja(naziv.getString("stringValue"));
         JSONObject odgovori = fields.getJSONObject("odgovori");
         JSONObject arrayValue = odgovori.getJSONObject("arrayValue");
         JSONArray values = arrayValue.getJSONArray("values");
@@ -570,7 +574,7 @@ public class Firebase {
                         os.write(input, 0, input.length);
                     }
 
-                    urlConnection.getResponseCode(); // u ovom trenutku se izvrsi upit
+                    urlConnection.getResponseCode();
 
                     InputStream odgovor = urlConnection.getInputStream();
                     try (BufferedReader br = new BufferedReader(new InputStreamReader(odgovor, StandardCharsets.UTF_8))) {
@@ -599,7 +603,7 @@ public class Firebase {
             @Override
             protected Void doInBackground(String... strings) {
                 try {
-                    String naziv = kategorija.getNaziv().replaceAll(" ", "");
+                    String naziv = kategorija.getNaziv().replaceAll(" ", "_");
                     String urlString = "https://firestore.googleapis.com/v1/projects/rma19poljcicfaris20/databases/(default)/documents/Kategorije?documentId=" + naziv + "&access_token=";
 
                     HttpURLConnection urlConnection = getHTTPConnection(urlString);
@@ -614,7 +618,7 @@ public class Firebase {
                             "\"idIkonice\":{\"stringValue\":\"" + kategorija.getId() + "\"}}}";
 
                     try (OutputStream os = urlConnection.getOutputStream()) {
-                        byte[] input = dokument.getBytes("utf-8");
+                        byte[] input = dokument.getBytes(StandardCharsets.UTF_8);
                         os.write(input, 0, input.length);
                     }
                     urlConnection.getResponseCode();

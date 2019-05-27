@@ -258,12 +258,15 @@ public class DodajKvizAkt extends AppCompatActivity implements Firebase.PitanjeI
                 noveKategorije.add(novaKategorija);
                 categorySpinner.setSelection(kategorije.size() - 2);
                 categoryAdapter.notifyDataSetChanged();
+                Firebase.dodajKategoriju(novaKategorija);
             } else
                 categorySpinner.setSelection(kategorije.indexOf(novaKategorija));
             pitanja.clear();
             pitanja.addAll(tempPitanja);
             pitanja.add(new Pitanje());
             listAdapter.notifyDataSetChanged();
+            for (Pitanje pitanje : tempPitanja)
+                Firebase.dodajPitanje(pitanje, this);
         }
     }
 
@@ -346,7 +349,7 @@ public class DodajKvizAkt extends AppCompatActivity implements Firebase.PitanjeI
 
         optListAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, mogucaPitanja);
         optionalQuestionsList.setAdapter(optListAdapter);
-        Firebase.pitanja(kviz, this);
+        Firebase.pitanja( this);
 
         int layoutID = android.R.layout.simple_list_item_1;
         kategorije = (ArrayList<Kategorija>) intent.getSerializableExtra("kategorija");
