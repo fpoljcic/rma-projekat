@@ -116,15 +116,9 @@ public class Firebase {
 
             @Override
             protected Void doInBackground(String... strings) {
-                InputStream inputStream = Firebase.class.getResourceAsStream("/res/raw/secret.json");
-                GoogleCredential credentials;
                 try {
-                    credentials = GoogleCredential.fromStream(inputStream).createScoped(Lists.newArrayList("https://www.googleapis.com/auth/datastore"));
-                    credentials.refreshToken();
-                    String token = credentials.getAccessToken();
                     String urlString = "https://firestore.googleapis.com/v1/projects/rma19poljcicfaris20/databases/(default)/documents/Pitanja?access_token=";
-                    URL url = new URL(urlString + URLEncoder.encode(token, "UTF-8"));
-                    HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
+                    HttpURLConnection urlConnection = getHTTPConnection(urlString);
 
                     InputStream in = new BufferedInputStream((urlConnection.getInputStream()));
                     String rezultat = convertStreamToString(in);

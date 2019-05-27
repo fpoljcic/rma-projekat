@@ -1,5 +1,7 @@
 package ba.unsa.etf.rma.aktivnosti;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -75,7 +77,7 @@ public class DodajKategorijuAkt extends AppCompatActivity implements IconDialog.
                     finish();
                 }
                 if (vecPostoji)
-                    Toast.makeText(getApplicationContext(), "Unesena kategorija već postoji!", Toast.LENGTH_SHORT).show();
+                    showAlert("Unesena kategorija već postoji!");
             }
         });
     }
@@ -84,5 +86,18 @@ public class DodajKategorijuAkt extends AppCompatActivity implements IconDialog.
     public void onIconDialogIconsSelected(Icon[] icons) {
         selectedIcons = icons;
         categoryIconField.setText(String.valueOf(selectedIcons[0].getId()));
+    }
+
+    private void showAlert(String message) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage(message);
+        builder.setCancelable(false);
+        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                // nothing?
+            }
+        });
+        AlertDialog alert = builder.create();
+        alert.show();
     }
 }

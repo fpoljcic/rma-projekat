@@ -208,6 +208,10 @@ public class KvizoviAkt extends AppCompatActivity implements ListFrag.OnFragment
 
     private void filterByCategory(Kategorija kategorija) {
         prikazaniKvizovi.clear();
+        if (kategorija.getNaziv().equals("Svi"))
+            Firebase.kvizovi(null, this);
+        else
+            Firebase.kvizovi(kategorija, this);
         if (kategorija.getNaziv().equals("Svi")) {
             prikazaniKvizovi.addAll(kvizovi);
             prikazaniKvizovi.add(null);
