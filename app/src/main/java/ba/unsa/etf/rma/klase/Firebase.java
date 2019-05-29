@@ -52,6 +52,37 @@ public class Firebase {
         }.execute();
     }
 
+    /*
+    public static void test(final String sss, final DodajKvizAkt akt) {
+        new AsyncTask<String, Integer, Boolean>() {
+            @Override
+            protected void onPostExecute(Boolean postoji) {
+                super.onPostExecute(postoji);
+                akt.showAlert("Zavrsenoooo");
+            }
+
+            @Override
+            protected Boolean doInBackground(String... strings) {
+                String urlString = "https://firestore.googleapis.com/v1/projects/rma19poljcicfaris20/databases/(default)/documents/test?access_token=";
+                return provjeri(urlString, sss);
+
+                try {
+                    String urlString = "https://firestore.googleapis.com/v1/projects/rma19poljcicfaris20/databases/(default)/documents/test/" + sss + "?access_token=";
+                    HttpURLConnection urlConnection = getHTTPConnection(urlString);
+                    urlConnection.getInputStream();
+                    return true;
+                } catch (IOException greska) {
+                    greska.printStackTrace();
+                }
+                return false;
+
+            }
+
+        }.execute();
+
+    }
+    */
+
     private static void dodajKvizFun(final Kviz kviz, final ArrayList<String> idPitanja) throws IOException {
         String naziv = kviz.getNaziv().replaceAll(" ", "_");
         String urlString = "https://firestore.googleapis.com/v1/projects/rma19poljcicfaris20/databases/(default)/documents/Kvizovi?documentId=" + naziv + "&access_token=";
@@ -648,4 +679,64 @@ public class Firebase {
         }
         return sb.toString();
     }
+
+    /*
+    public static void categoryExists(final String idKategorije) {
+        new AsyncTask<String, Integer, Boolean>() {
+
+            @Override
+            protected void onPostExecute(Boolean aBoolean) {
+                super.onPostExecute(aBoolean);
+            }
+
+            @Override
+            protected Boolean doInBackground(String... strings) {
+                try {
+                    String dokument = "{" +
+                            "\"structuredQuery\": {" +
+                            "\"where\" : {" +
+                            "\"fieldFilter\" : { " +
+                            "\"field\": {\"fieldPath\": \"naziv\"}, " +
+                            "\"op\":\"EQUAL\", " +
+                            "\"value\": {\"stringValue\": \"" + idKategorije.replaceAll(" ", "_") + "\"}" +
+                            "}" +
+                            "}," +
+                            "\"select\": { \"fields\": [{\"fieldPath\": \"naziv\"}, ] }, " +
+                            "\"from\": [{\"collectionId\": \"Kategorije\"}]" +
+                            "\"limit\": 1000 " +
+                            "}" +
+                            "}";
+                    String urlString = "https://firestore.googleapis.com/v1/projects/rma19poljcicfaris20/databases/(default)/documents:runQuery?access_token=";
+                    HttpURLConnection urlConnection = getHTTPConnection(urlString);
+                    urlConnection.setDoOutput(true);
+                    urlConnection.setRequestMethod("POST");
+                    urlConnection.setRequestProperty("Content-Type", "application/json");
+                    urlConnection.setRequestProperty("Accept", "application/json");
+
+                    try (OutputStream os = urlConnection.getOutputStream()) {
+                        byte[] input = dokument.getBytes(StandardCharsets.UTF_8);
+                        os.write(input, 0, input.length);
+                    }
+                    int code = urlConnection.getResponseCode();
+
+                    InputStream in = urlConnection.getInputStream();
+                    String rezultat = convertStreamToString(in);
+                    rezultat = "{\"documents\": " + rezultat + "}";
+                    JSONObject jsonObject = new JSONObject(rezultat);
+
+                    try (BufferedReader br = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8))) {
+                        StringBuilder response = new StringBuilder();
+                        String responseLine;
+                        while ((responseLine = br.readLine()) != null)
+                            response.append((responseLine.trim()));
+                        System.out.println(response.toString());
+                    }
+                } catch (IOException | JSONException greska) {
+                    greska.printStackTrace();
+                }
+                return null;
+            }
+        }.execute();
+    }
+    */
 }
