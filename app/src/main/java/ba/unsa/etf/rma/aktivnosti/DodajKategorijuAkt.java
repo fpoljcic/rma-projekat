@@ -23,6 +23,7 @@ public class DodajKategorijuAkt extends AppCompatActivity implements IconDialog.
     private Button addIconBtn, addCategoryBtn;
     private ArrayList<Kategorija> kategorije;
     private Icon[] selectedIcons;
+    private AlertDialog alert;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -89,6 +90,8 @@ public class DodajKategorijuAkt extends AppCompatActivity implements IconDialog.
         Intent replyIntent = new Intent();
         replyIntent.putExtra("novaKategorija", new Kategorija(categoryNameField.getText().toString(), categoryIconField.getText().toString()));
         setResult(RESULT_OK, replyIntent);
+        if (alert != null)
+            alert.dismiss();
         finish();
     }
 
@@ -107,7 +110,7 @@ public class DodajKategorijuAkt extends AppCompatActivity implements IconDialog.
                 // nothing?
             }
         });
-        AlertDialog alert = builder.create();
+        alert = builder.create();
         alert.show();
     }
 }

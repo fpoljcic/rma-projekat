@@ -42,6 +42,7 @@ public class DodajKvizAkt extends AppCompatActivity implements Firebase.PitanjeI
     private int pozicija = -1;
     private Kviz kviz;
     private Kategorija dodajKategoriju;
+    private AlertDialog alert;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -87,10 +88,14 @@ public class DodajKvizAkt extends AppCompatActivity implements Firebase.PitanjeI
                     return;
                 }
                 dodajKvizBtn.setText(R.string.sacekajte);
-                if (pozicija == -1)
+                if (pozicija == -1) // dodavanje novog kviza
                     Firebase.containtsKviz(quizName.getText().toString(), DodajKvizAkt.this);
-                else
-                    kvizProvjeraZavrsena(false);
+                else { // azuriranje postojeceg kviza
+                    if (kviz.getNaziv().equals(quizName.getText().toString())) // ostao isti naziv
+                        kvizProvjeraZavrsena(false);
+                    else // naziv promijenjen
+                        Firebase.containtsKviz(quizName.getText().toString(), DodajKvizAkt.this);
+                }
             }
         });
         importKvizbtn.setOnClickListener(new View.OnClickListener() {
@@ -318,7 +323,7 @@ public class DodajKvizAkt extends AppCompatActivity implements Firebase.PitanjeI
                 // nothing?
             }
         });
-        AlertDialog alert = builder.create();
+        alert = builder.create();
         alert.show();
     }
 
@@ -369,6 +374,8 @@ public class DodajKvizAkt extends AppCompatActivity implements Firebase.PitanjeI
         Intent backIntent = new Intent();
         backIntent.putExtra("noveKategorije", noveKategorije);
         setResult(RESULT_CANCELED, backIntent);
+        if (alert != null)
+            alert.dismiss();
         finish();
     }
 

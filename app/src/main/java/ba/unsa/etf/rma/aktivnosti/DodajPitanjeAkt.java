@@ -26,6 +26,7 @@ public class DodajPitanjeAkt extends AppCompatActivity implements Firebase.Pitan
     private ArrayList<String> odgovori = new ArrayList<>();
     private String tacanOdgovor;
     private ArrayAdapter<String> adapter;
+    private AlertDialog alert;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -139,6 +140,8 @@ public class DodajPitanjeAkt extends AppCompatActivity implements Firebase.Pitan
         replyIntent.putExtra("odgovori", odgovori);
         replyIntent.putExtra("tacanOdgovor", tacanOdgovor);
         setResult(RESULT_OK, replyIntent);
+        if (alert != null)
+            alert.dismiss();
         finish();
     }
 
@@ -151,7 +154,7 @@ public class DodajPitanjeAkt extends AppCompatActivity implements Firebase.Pitan
                 // nothing?
             }
         });
-        AlertDialog alert = builder.create();
+        alert = builder.create();
         alert.show();
     }
 }

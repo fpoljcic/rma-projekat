@@ -52,37 +52,6 @@ public class Firebase {
         }.execute();
     }
 
-    /*
-    public static void test(final String sss, final DodajKvizAkt akt) {
-        new AsyncTask<String, Integer, Boolean>() {
-            @Override
-            protected void onPostExecute(Boolean postoji) {
-                super.onPostExecute(postoji);
-                akt.showAlert("Zavrsenoooo");
-            }
-
-            @Override
-            protected Boolean doInBackground(String... strings) {
-                String urlString = "https://firestore.googleapis.com/v1/projects/rma19poljcicfaris20/databases/(default)/documents/test?access_token=";
-                return provjeri(urlString, sss);
-
-                try {
-                    String urlString = "https://firestore.googleapis.com/v1/projects/rma19poljcicfaris20/databases/(default)/documents/test/" + sss + "?access_token=";
-                    HttpURLConnection urlConnection = getHTTPConnection(urlString);
-                    urlConnection.getInputStream();
-                    return true;
-                } catch (IOException greska) {
-                    greska.printStackTrace();
-                }
-                return false;
-
-            }
-
-        }.execute();
-
-    }
-    */
-
     private static void dodajKvizFun(final Kviz kviz, final ArrayList<String> idPitanja) throws IOException {
         String naziv = kviz.getNaziv().replaceAll(" ", "_");
         String urlString = "https://firestore.googleapis.com/v1/projects/rma19poljcicfaris20/databases/(default)/documents/Kvizovi?documentId=" + naziv + "&access_token=";
@@ -105,7 +74,7 @@ public class Firebase {
             dokument += "]}},";
         }
         dokument += "\"naziv\":{\"stringValue\":\"" + kviz.getNaziv() + "\"}," +
-                "\"idKategorije\":{\"stringValue\":\"" + kviz.getKategorija().getNaziv() + "\"}}}";
+                "\"idKategorije\":{\"stringValue\":\"" + kviz.getKategorija().getNaziv().replaceAll(" ", "_") + "\"}}}";
 
         try (OutputStream os = urlConnection.getOutputStream()) {
             byte[] input = dokument.getBytes(StandardCharsets.UTF_8);
@@ -131,7 +100,7 @@ public class Firebase {
     }
 
     private static void obrisiKviz(String id) throws IOException {
-        String urlString = "https://firestore.googleapis.com/v1/projects/rma19poljcicfaris20/databases/(default)/documents/Kvizovi/" + id + "?access_token=";
+        String urlString = "https://firestore.googleapis.com/v1/projects/rma19poljcicfaris20/databases/(default)/documents/Kvizovi/" + id.replace(" ", "_") + "?access_token=";
         HttpURLConnection urlConnection = getHTTPConnection(urlString);
         urlConnection.setRequestMethod("DELETE");
         urlConnection.getResponseCode();
@@ -543,7 +512,7 @@ public class Firebase {
         if (idKategorije.equals("Svi"))
             return null;
         Kategorija kategorija = new Kategorija();
-        String urlString = "https://firestore.googleapis.com/v1/projects/rma19poljcicfaris20/databases/(default)/documents/Kategorije/" + idKategorije + "?access_token=";
+        String urlString = "https://firestore.googleapis.com/v1/projects/rma19poljcicfaris20/databases/(default)/documents/Kategorije/" + idKategorije.replaceAll(" ", "_") + "?access_token=";
         HttpURLConnection urlConnection = getHTTPConnection(urlString);
         InputStream in = new BufferedInputStream((urlConnection.getInputStream()));
         String rezultat = convertStreamToString(in);
