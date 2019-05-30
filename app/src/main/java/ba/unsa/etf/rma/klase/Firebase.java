@@ -184,7 +184,6 @@ public class Firebase {
         }.execute();
     }
 
-
     private static int getPozicijaIgraca(String nazivKvizaString, double procenatTacnihParam) throws IOException, JSONException {
         int pozicijaIgraca = 1;
         String urlString = "https://firestore.googleapis.com/v1/projects/rma19poljcicfaris20/databases/(default)/documents/Rangliste?access_token=";
@@ -255,8 +254,7 @@ public class Firebase {
 
             @Override
             protected Boolean doInBackground(String... strings) {
-                String urlString = "https://firestore.googleapis.com/v1/projects/rma19poljcicfaris20/databases/(default)/documents/Kategorije?access_token=";
-                return provjeri(urlString, nazivKategorije);
+                return provjeri("Kategorije", nazivKategorije);
             }
         }.execute();
     }
@@ -275,8 +273,7 @@ public class Firebase {
 
             @Override
             protected Boolean doInBackground(String... strings) {
-                String urlString = "https://firestore.googleapis.com/v1/projects/rma19poljcicfaris20/databases/(default)/documents/Pitanja?access_token=";
-                return provjeri(urlString, nazivPitanja);
+                return provjeri("Pitanja", nazivPitanja);
             }
         }.execute();
     }
@@ -295,30 +292,52 @@ public class Firebase {
 
             @Override
             protected Boolean doInBackground(String... strings) {
-                String urlString = "https://firestore.googleapis.com/v1/projects/rma19poljcicfaris20/databases/(default)/documents/Kvizovi?access_token=";
-                return provjeri(urlString, nazivKviza);
+                return provjeri("Kvizovi", nazivKviza);
             }
         }.execute();
     }
 
-    private static boolean provjeri(String urlString, String nazivString) {
+    private static boolean provjeri(final String nazivKolekcije, final String nazivString) {
         try {
+            String dokument = "{\"structuredQuery\": {" +
+                    "\"where\" : {" +
+                    "\"fieldFilter\" : { " +
+                    "\"field\": {\"fieldPath\": \"naziv\"}, " +
+                    "\"op\":\"EQUAL\", " +
+                    "\"value\": {\"stringValue\": \"" + nazivString + "\"}}}," +
+                    "\"select\": { \"fields\": [{\"fieldPath\": \"naziv\"} ] }, " +
+                    "\"from\": [{\"collectionId\": \"" + nazivKolekcije + "\"}]," +
+                    "\"limit\": 1000 }}";
+            String urlString = "https://firestore.googleapis.com/v1/projects/rma19poljcicfaris20/databases/(default)/documents:runQuery?access_token=";
             HttpURLConnection urlConnection = getHTTPConnection(urlString);
-            InputStream in = new BufferedInputStream((urlConnection.getInputStream()));
+            urlConnection.setDoOutput(true);
+            urlConnection.setRequestMethod("POST");
+            urlConnection.setRequestProperty("Content-Type", "application/json");
+            urlConnection.setRequestProperty("Accept", "application/json");
+
+            try (OutputStream os = urlConnection.getOutputStream()) {
+                byte[] input = dokument.getBytes(StandardCharsets.UTF_8);
+                os.write(input, 0, input.length);
+            }
+            urlConnection.getResponseCode();
+
+            InputStream in = urlConnection.getInputStream();
             String rezultat = convertStreamToString(in);
-            JSONObject root = new JSONObject(rezultat);
-            JSONArray documents = root.getJSONArray("documents");
-            for (int i = 0; i < documents.length(); i++) {
-                JSONObject kvizJson = documents.getJSONObject(i);
-                JSONObject fields = kvizJson.getJSONObject("fields");
-                JSONObject naziv = fields.getJSONObject("naziv");
-                if (naziv.getString("stringValue").equals(nazivString))
-                    return true;
+            rezultat = "{\"documents\": " + rezultat + "}";
+            JSONObject jsonObject = new JSONObject(rezultat);
+            JSONArray documents = jsonObject.getJSONArray("documents");
+            JSONObject jsonObject2 = documents.getJSONObject(0);
+
+            try {
+                jsonObject2.getJSONObject("document");
+            } catch (JSONException ignored) {
+                // Ne postoji dokument sa datim id-om
+                return false;
             }
         } catch (IOException | JSONException greska) {
             greska.printStackTrace();
         }
-        return false;
+        return true;
     }
 
     public interface RangListaInterface {
@@ -525,7 +544,6 @@ public class Firebase {
         return kategorija;
     }
 
-
     public interface PitanjeInterface {
         void getPitanjeId(Pair<String, Pitanje> idPitanja);
 
@@ -649,63 +667,4 @@ public class Firebase {
         return sb.toString();
     }
 
-    /*
-    public static void categoryExists(final String idKategorije) {
-        new AsyncTask<String, Integer, Boolean>() {
-
-            @Override
-            protected void onPostExecute(Boolean aBoolean) {
-                super.onPostExecute(aBoolean);
-            }
-
-            @Override
-            protected Boolean doInBackground(String... strings) {
-                try {
-                    String dokument = "{" +
-                            "\"structuredQuery\": {" +
-                            "\"where\" : {" +
-                            "\"fieldFilter\" : { " +
-                            "\"field\": {\"fieldPath\": \"naziv\"}, " +
-                            "\"op\":\"EQUAL\", " +
-                            "\"value\": {\"stringValue\": \"" + idKategorije.replaceAll(" ", "_") + "\"}" +
-                            "}" +
-                            "}," +
-                            "\"select\": { \"fields\": [{\"fieldPath\": \"naziv\"}, ] }, " +
-                            "\"from\": [{\"collectionId\": \"Kategorije\"}]" +
-                            "\"limit\": 1000 " +
-                            "}" +
-                            "}";
-                    String urlString = "https://firestore.googleapis.com/v1/projects/rma19poljcicfaris20/databases/(default)/documents:runQuery?access_token=";
-                    HttpURLConnection urlConnection = getHTTPConnection(urlString);
-                    urlConnection.setDoOutput(true);
-                    urlConnection.setRequestMethod("POST");
-                    urlConnection.setRequestProperty("Content-Type", "application/json");
-                    urlConnection.setRequestProperty("Accept", "application/json");
-
-                    try (OutputStream os = urlConnection.getOutputStream()) {
-                        byte[] input = dokument.getBytes(StandardCharsets.UTF_8);
-                        os.write(input, 0, input.length);
-                    }
-                    int code = urlConnection.getResponseCode();
-
-                    InputStream in = urlConnection.getInputStream();
-                    String rezultat = convertStreamToString(in);
-                    rezultat = "{\"documents\": " + rezultat + "}";
-                    JSONObject jsonObject = new JSONObject(rezultat);
-
-                    try (BufferedReader br = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8))) {
-                        StringBuilder response = new StringBuilder();
-                        String responseLine;
-                        while ((responseLine = br.readLine()) != null)
-                            response.append((responseLine.trim()));
-                        System.out.println(response.toString());
-                    }
-                } catch (IOException | JSONException greska) {
-                    greska.printStackTrace();
-                }
-                return null;
-            }
-        }.execute();
-    }
-    */
 }
