@@ -27,14 +27,17 @@ import java.util.Iterator;
 
 
 public class Firebase {
-    private static HttpURLConnection getHTTPConnection(String urlString) throws IOException {
-        InputStream inputStream = Firebase.class.getResourceAsStream("/res/raw/secret.json");
-        GoogleCredential credentials;
-        if (inputStream == null)
-            throw new IOException("Problem sa citanjem secret.json datoteke!");
-        credentials = GoogleCredential.fromStream(inputStream).createScoped(Lists.newArrayList("https://www.googleapis.com/auth/datastore"));
-        credentials.refreshToken();
-        String token = credentials.getAccessToken();
+    private static String token;
+    private static HttpURLConnection getHTTPConnection(String urlString, boolean refresh) throws IOException {
+        if (refresh) {
+            InputStream inputStream = Firebase.class.getResourceAsStream("/res/raw/secret.json");
+            GoogleCredential credentials;
+            if (inputStream == null)
+                throw new IOException("Problem sa citanjem secret.json datoteke!");
+            credentials = GoogleCredential.fromStream(inputStream).createScoped(Lists.newArrayList("https://www.googleapis.com/auth/datastore"));
+            credentials.refreshToken();
+            token = credentials.getAccessToken();
+        }
         URL url = new URL(urlString + URLEncoder.encode(token, "UTF-8"));
         return (HttpURLConnection) url.openConnection();
     }
@@ -56,13 +59,16 @@ public class Firebase {
     private static void dodajKvizFun(final Kviz kviz, final ArrayList<String> idPitanja) throws IOException {
         String naziv = kviz.getNaziv().replaceAll(" ", "_");
         String urlString = "https://firestore.googleapis.com/v1/projects/rma19poljcicfaris20/databases/(default)/documents/Kvizovi?documentId=" + naziv + "&access_token=";
-        HttpURLConnection urlConnection = getHTTPConnection(urlString);
+        HttpURLConnection urlConnection = getHTTPConnection(urlString, true);
         urlConnection.setDoOutput(true);
         urlConnection.setRequestMethod("POST");
         urlConnection.setRequestProperty("Content-Type", "application/json");
         urlConnection.setRequestProperty("Accept", "application/json");
+        String idKategorije;
         if (kviz.getKategorija() == null)
-            kviz.setKategorija(new Kategorija("Svi", "-1"));
+            idKategorije = "Svi";
+        else
+            idKategorije = kviz.getKategorija().getNaziv().replaceAll(" ", "_");
         String dokument = "{ \"fields\": {";
         if (idPitanja.size() != 0) {
             dokument += "\"pitanja\": {\"arrayValue\": {\"values\": [";
@@ -75,7 +81,7 @@ public class Firebase {
             dokument += "]}},";
         }
         dokument += "\"naziv\":{\"stringValue\":\"" + kviz.getNaziv() + "\"}," +
-                "\"idKategorije\":{\"stringValue\":\"" + kviz.getKategorija().getNaziv().replaceAll(" ", "_") + "\"}}}";
+                "\"idKategorije\":{\"stringValue\":\"" + idKategorije + "\"}}}";
 
         try (OutputStream os = urlConnection.getOutputStream()) {
             byte[] input = dokument.getBytes(StandardCharsets.UTF_8);
@@ -90,11 +96,14 @@ public class Firebase {
             protected Void doInBackground(String... strings) {
                 try {
                     if (!nazivPostojecegKviza.equals(noviKviz.getNaziv())) {
-                        obrisiKviz(nazivPostojecegKviza);
                         dodajKvizFun(noviKviz, idPitanja);
+                        obrisiKviz(nazivPostojecegKviza);
+                        StringBuilder idRangliste = new StringBuilder();
+                        if (postojiRanglista(nazivPostojecegKviza, idRangliste))
+                            updateNazivRangliste(idRangliste, nazivPostojecegKviza, noviKviz.getNaziv());
                     } else
-                        updateKviz(nazivPostojecegKviza, noviKviz, idPitanja);
-                } catch (IOException greska) {
+                        updateKviz(noviKviz, idPitanja);
+                } catch (IOException | JSONException greska) {
                     greska.printStackTrace();
                 }
                 return null;
@@ -102,29 +111,32 @@ public class Firebase {
         }.execute();
     }
 
-    private static void updateKviz(String nazivPostojecegKviza, Kviz noviKviz, ArrayList<String> idPitanja) throws IOException {
-        String urlString = "https://firestore.googleapis.com/v1/projects/rma19poljcicfaris20/databases/(default)/documents/Kvizovi/" + nazivPostojecegKviza.replaceAll(" ", "_") + "?access_token=";
-        HttpURLConnection urlConnection = getHTTPConnection(urlString);
+    private static void updateKviz(Kviz noviKviz, ArrayList<String> idPitanja) throws IOException {
+        String urlString = "https://firestore.googleapis.com/v1/projects/rma19poljcicfaris20/databases/(default)/documents/Kvizovi/" + noviKviz.getNaziv().replaceAll(" ", "_") + "?access_token=";
+        HttpURLConnection urlConnection = getHTTPConnection(urlString, true);
         urlConnection.setDoOutput(true);
         urlConnection.setRequestMethod("PATCH");
         urlConnection.setRequestProperty("Content-Type", "application/json-patch");
         urlConnection.setRequestProperty("Accept", "application/json");
-        String dokument;
+        String idKategorije;
         if (noviKviz.getKategorija() == null)
-            dokument = "{\"idKategorije\":{\"stringValue\":\"" + "Svi" + "\"}";
+            idKategorije = "Svi";
         else
-            dokument = "{\"idKategorije\":{\"stringValue\":\"" + noviKviz.getKategorija().getNaziv().replaceAll(" ", "_") + "\"}";
+            idKategorije = noviKviz.getKategorija().getNaziv().replaceAll(" ", "_");
+        String dokument = "{ \"fields\": {";
         if (idPitanja.size() != 0) {
-            dokument += ", \"pitanja\": {\"arrayValue\": {\"values\": [";
+            dokument += "\"pitanja\": {\"arrayValue\": {\"values\": [";
             for (int i = 0; i < idPitanja.size(); i++) {
                 if (i != idPitanja.size() - 1)
                     dokument += "{\"stringValue\":\"" + idPitanja.get(i) + "\"},";
                 else
                     dokument += "{\"stringValue\":\"" + idPitanja.get(i) + "\"}";
             }
-            dokument += "]}}}";
-        } else
-            dokument += "}";
+            dokument += "]}},";
+        }
+        dokument += "\"naziv\":{\"stringValue\":\"" + noviKviz.getNaziv() + "\"}," +
+                "\"idKategorije\":{\"stringValue\":\"" + idKategorije + "\"}}}";
+
         try (OutputStream os = urlConnection.getOutputStream()) {
             byte[] input = dokument.getBytes(StandardCharsets.UTF_8);
             os.write(input, 0, input.length);
@@ -134,7 +146,7 @@ public class Firebase {
 
     private static void obrisiKviz(String id) throws IOException {
         String urlString = "https://firestore.googleapis.com/v1/projects/rma19poljcicfaris20/databases/(default)/documents/Kvizovi/" + id.replace(" ", "_") + "?access_token=";
-        HttpURLConnection urlConnection = getHTTPConnection(urlString);
+        HttpURLConnection urlConnection = getHTTPConnection(urlString, false);
         urlConnection.setRequestMethod("DELETE");
         urlConnection.getResponseCode();
     }
@@ -152,7 +164,7 @@ public class Firebase {
                 ArrayList<Pair<String, Pitanje>> pitanja = new ArrayList<>();
                 try {
                     String urlString = "https://firestore.googleapis.com/v1/projects/rma19poljcicfaris20/databases/(default)/documents/Pitanja?access_token=";
-                    HttpURLConnection urlConnection = getHTTPConnection(urlString);
+                    HttpURLConnection urlConnection = getHTTPConnection(urlString, true);
 
                     InputStream in = new BufferedInputStream((urlConnection.getInputStream()));
                     String rezultat = convertStreamToString(in);
@@ -200,7 +212,7 @@ public class Firebase {
                     "\"from\": [{\"collectionId\": \"" + "Rangliste" + "\"}]," +
                     "\"limit\": 1000 }}";
             String urlString = "https://firestore.googleapis.com/v1/projects/rma19poljcicfaris20/databases/(default)/documents:runQuery?access_token=";
-            HttpURLConnection urlConnection = getHTTPConnection(urlString);
+            HttpURLConnection urlConnection = getHTTPConnection(urlString, true);
             urlConnection.setDoOutput(true);
             urlConnection.setRequestMethod("POST");
             urlConnection.setRequestProperty("Content-Type", "application/json");
@@ -255,7 +267,7 @@ public class Firebase {
 
     private static void dodajRanglistu(String nazivKviza, String ime, double procenatTacnih) throws IOException {
         String urlString = "https://firestore.googleapis.com/v1/projects/rma19poljcicfaris20/databases/(default)/documents/Rangliste?access_token=";
-        HttpURLConnection urlConnection = getHTTPConnection(urlString);
+        HttpURLConnection urlConnection = getHTTPConnection(urlString, false);
         urlConnection.setDoOutput(true);
         urlConnection.setRequestMethod("POST");
         urlConnection.setRequestProperty("Content-Type", "application/json");
@@ -274,7 +286,7 @@ public class Firebase {
         ArrayList<Pair<String, Double>> igraci = new ArrayList<>();
         try {
             String urlString = "https://firestore.googleapis.com/v1/projects/rma19poljcicfaris20/databases/(default)/documents/Rangliste/" + idRangliste + "?access_token=";
-            HttpURLConnection urlConnection = getHTTPConnection(urlString);
+            HttpURLConnection urlConnection = getHTTPConnection(urlString, false);
 
             InputStream in = new BufferedInputStream((urlConnection.getInputStream()));
             String rezultat = convertStreamToString(in);
@@ -305,7 +317,7 @@ public class Firebase {
 
     private static void updateRanglistu(String idRangliste, String nazivKviza, String ime, double procenatTacnih) throws IOException {
         String urlString = "https://firestore.googleapis.com/v1/projects/rma19poljcicfaris20/databases/(default)/documents/Rangliste/" + idRangliste + "?access_token=";
-        HttpURLConnection urlConnection = getHTTPConnection(urlString);
+        HttpURLConnection urlConnection = getHTTPConnection(urlString, false);
         urlConnection.setDoOutput(true);
         urlConnection.setRequestMethod("PATCH");
         urlConnection.setRequestProperty("Content-Type", "application/json");
@@ -329,6 +341,30 @@ public class Firebase {
 
         try (OutputStream os = urlConnection.getOutputStream()) {
             byte[] input = dokument.getBytes(StandardCharsets.UTF_8);
+            os.write(input, 0, input.length);
+        }
+        urlConnection.getResponseCode();
+    }
+
+    private static void updateNazivRangliste(StringBuilder idRangliste, String nazivPostojecegKviza, String noviNazivKviza) throws IOException, JSONException {
+        String urlString = "https://firestore.googleapis.com/v1/projects/rma19poljcicfaris20/databases/(default)/documents/Rangliste/" + idRangliste.toString() + "?access_token=";
+        HttpURLConnection urlConnection = getHTTPConnection(urlString, false);
+
+        InputStream in = new BufferedInputStream((urlConnection.getInputStream()));
+        String rezultat = convertStreamToString(in);
+        JSONObject root = new JSONObject(rezultat);
+
+        JSONObject fields = root.getJSONObject("fields");
+        rezultat = fields.toString();
+        rezultat = rezultat.replaceAll("\"" + nazivPostojecegKviza + "\"", "\"" + noviNazivKviza + "\"");
+        rezultat = "{ \"fields\": " + rezultat + "}";
+        urlConnection = getHTTPConnection(urlString, false);
+        urlConnection.setDoOutput(true);
+        urlConnection.setRequestMethod("PATCH");
+        urlConnection.setRequestProperty("Content-Type", "application/json");
+        urlConnection.setRequestProperty("Accept", "application/json");
+        try (OutputStream os = urlConnection.getOutputStream()) {
+            byte[] input = rezultat.getBytes(StandardCharsets.UTF_8);
             os.write(input, 0, input.length);
         }
         urlConnection.getResponseCode();
@@ -403,7 +439,7 @@ public class Firebase {
                     "\"from\": [{\"collectionId\": \"" + nazivKolekcije + "\"}]," +
                     "\"limit\": 1000 }}";
             String urlString = "https://firestore.googleapis.com/v1/projects/rma19poljcicfaris20/databases/(default)/documents:runQuery?access_token=";
-            HttpURLConnection urlConnection = getHTTPConnection(urlString);
+            HttpURLConnection urlConnection = getHTTPConnection(urlString, true);
             urlConnection.setDoOutput(true);
             urlConnection.setRequestMethod("POST");
             urlConnection.setRequestProperty("Content-Type", "application/json");
@@ -461,8 +497,8 @@ public class Firebase {
                 if (!postojiRanglista(kviz.getNaziv(), idRangliste))
                     return igraci;
                 try {
-                    String urlString = "https://firestore.googleapis.com/v1/projects/rma19poljcicfaris20/databases/(default)/documents/Rangliste/" + idRangliste.toString() +  "?access_token=";
-                    HttpURLConnection urlConnection = getHTTPConnection(urlString);
+                    String urlString = "https://firestore.googleapis.com/v1/projects/rma19poljcicfaris20/databases/(default)/documents/Rangliste/" + idRangliste.toString() + "?access_token=";
+                    HttpURLConnection urlConnection = getHTTPConnection(urlString, true);
 
                     InputStream in = new BufferedInputStream((urlConnection.getInputStream()));
                     String rezultat = convertStreamToString(in);
@@ -512,7 +548,7 @@ public class Firebase {
                 ArrayList<Kategorija> kategorije = new ArrayList<>();
                 try {
                     String urlString = "https://firestore.googleapis.com/v1/projects/rma19poljcicfaris20/databases/(default)/documents/Kategorije?access_token=";
-                    HttpURLConnection urlConnection = getHTTPConnection(urlString);
+                    HttpURLConnection urlConnection = getHTTPConnection(urlString, true);
 
                     InputStream in = new BufferedInputStream((urlConnection.getInputStream()));
                     String rezultat = convertStreamToString(in);
@@ -553,7 +589,7 @@ public class Firebase {
                 ArrayList<Kviz> kvizovi = new ArrayList<>();
                 try {
                     String urlString = "https://firestore.googleapis.com/v1/projects/rma19poljcicfaris20/databases/(default)/documents/Kvizovi?access_token=";
-                    HttpURLConnection urlConnection = getHTTPConnection(urlString);
+                    HttpURLConnection urlConnection = getHTTPConnection(urlString, true);
 
                     InputStream in = new BufferedInputStream((urlConnection.getInputStream()));
                     String rezultat = convertStreamToString(in);
@@ -599,7 +635,7 @@ public class Firebase {
     private static Pitanje getPitanje(String idPitanja) throws IOException, JSONException {
         Pitanje pitanje = new Pitanje();
         String urlString = "https://firestore.googleapis.com/v1/projects/rma19poljcicfaris20/databases/(default)/documents/Pitanja/" + idPitanja + "?access_token=";
-        HttpURLConnection urlConnection = getHTTPConnection(urlString);
+        HttpURLConnection urlConnection = getHTTPConnection(urlString, false);
         InputStream in = new BufferedInputStream((urlConnection.getInputStream()));
         String rezultat = convertStreamToString(in);
         JSONObject root = new JSONObject(rezultat);
@@ -626,7 +662,7 @@ public class Firebase {
             return null;
         Kategorija kategorija = new Kategorija();
         String urlString = "https://firestore.googleapis.com/v1/projects/rma19poljcicfaris20/databases/(default)/documents/Kategorije/" + idKategorije.replaceAll(" ", "_") + "?access_token=";
-        HttpURLConnection urlConnection = getHTTPConnection(urlString);
+        HttpURLConnection urlConnection = getHTTPConnection(urlString, false);
         InputStream in = new BufferedInputStream((urlConnection.getInputStream()));
         String rezultat = convertStreamToString(in);
         JSONObject root = new JSONObject(rezultat);
@@ -659,7 +695,7 @@ public class Firebase {
                 ArrayList<String> idPair = new ArrayList<>();
                 try {
                     String urlString = "https://firestore.googleapis.com/v1/projects/rma19poljcicfaris20/databases/(default)/documents/Pitanja?access_token=";
-                    HttpURLConnection urlConnection = getHTTPConnection(urlString);
+                    HttpURLConnection urlConnection = getHTTPConnection(urlString, true);
                     urlConnection.setDoOutput(true);
                     urlConnection.setRequestMethod("POST");
                     urlConnection.setRequestProperty("Content-Type", "application/json");
@@ -718,7 +754,7 @@ public class Firebase {
                     String naziv = kategorija.getNaziv().replaceAll(" ", "_");
                     String urlString = "https://firestore.googleapis.com/v1/projects/rma19poljcicfaris20/databases/(default)/documents/Kategorije?documentId=" + naziv + "&access_token=";
 
-                    HttpURLConnection urlConnection = getHTTPConnection(urlString);
+                    HttpURLConnection urlConnection = getHTTPConnection(urlString, true);
                     urlConnection.setDoOutput(true);
                     urlConnection.setRequestMethod("POST");
                     urlConnection.setRequestProperty("Content-Type", "application/json");
