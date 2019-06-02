@@ -111,7 +111,7 @@ public class PitanjeFrag extends Fragment {
                             selectedText.setBackgroundResource(R.color.colorDefaultBackground);
                             if (quizEnd) {
                                 // Zavrsio sa kvizom
-                                tekstPitanjaField.setText("Kviz je završen!");
+                                tekstPitanjaField.setText(getString(R.string.kviz_je_zavrsen));
                                 odgovori.clear();
                                 showPromptDialog(getContext());
                             } else {
@@ -160,6 +160,7 @@ public class PitanjeFrag extends Fragment {
 
     private void addRangListaFragment() {
         // Ukloni PitanjeFrag dodati RangLista
+        tekstPitanjaField.setText(R.string.sacekajte);
         callback.onQuizFinish();
     }
 
