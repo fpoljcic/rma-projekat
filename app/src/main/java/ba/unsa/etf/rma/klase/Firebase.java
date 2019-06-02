@@ -23,6 +23,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Iterator;
 
 
 public class Firebase {
@@ -83,20 +84,52 @@ public class Firebase {
         urlConnection.getResponseCode();
     }
 
-    public static void azuirajKviz(final String idKviza, final Kviz noviKviz, final ArrayList<String> idPitanja) {
+    public static void azuirajKviz(final String nazivPostojecegKviza, final Kviz noviKviz, final ArrayList<String> idPitanja) {
         new AsyncTask<String, Integer, Void>() {
             @Override
             protected Void doInBackground(String... strings) {
                 try {
-                    String id = idKviza.replaceAll(" ", "_");
-                    obrisiKviz(id);
-                    dodajKvizFun(noviKviz, idPitanja);
+                    if (!nazivPostojecegKviza.equals(noviKviz.getNaziv())) {
+                        obrisiKviz(nazivPostojecegKviza);
+                        dodajKvizFun(noviKviz, idPitanja);
+                    } else
+                        updateKviz(nazivPostojecegKviza, noviKviz, idPitanja);
                 } catch (IOException greska) {
                     greska.printStackTrace();
                 }
                 return null;
             }
         }.execute();
+    }
+
+    private static void updateKviz(String nazivPostojecegKviza, Kviz noviKviz, ArrayList<String> idPitanja) throws IOException {
+        String urlString = "https://firestore.googleapis.com/v1/projects/rma19poljcicfaris20/databases/(default)/documents/Kvizovi/" + nazivPostojecegKviza.replaceAll(" ", "_") + "?access_token=";
+        HttpURLConnection urlConnection = getHTTPConnection(urlString);
+        urlConnection.setDoOutput(true);
+        urlConnection.setRequestMethod("PATCH");
+        urlConnection.setRequestProperty("Content-Type", "application/json-patch");
+        urlConnection.setRequestProperty("Accept", "application/json");
+        String dokument;
+        if (noviKviz.getKategorija() == null)
+            dokument = "{\"idKategorije\":{\"stringValue\":\"" + "Svi" + "\"}";
+        else
+            dokument = "{\"idKategorije\":{\"stringValue\":\"" + noviKviz.getKategorija().getNaziv().replaceAll(" ", "_") + "\"}";
+        if (idPitanja.size() != 0) {
+            dokument += ", \"pitanja\": {\"arrayValue\": {\"values\": [";
+            for (int i = 0; i < idPitanja.size(); i++) {
+                if (i != idPitanja.size() - 1)
+                    dokument += "{\"stringValue\":\"" + idPitanja.get(i) + "\"},";
+                else
+                    dokument += "{\"stringValue\":\"" + idPitanja.get(i) + "\"}";
+            }
+            dokument += "]}}}";
+        } else
+            dokument += "}";
+        try (OutputStream os = urlConnection.getOutputStream()) {
+            byte[] input = dokument.getBytes(StandardCharsets.UTF_8);
+            os.write(input, 0, input.length);
+        }
+        urlConnection.getResponseCode();
     }
 
     private static void obrisiKviz(String id) throws IOException {
@@ -155,28 +188,64 @@ public class Firebase {
         }.execute();
     }
 
+    private static boolean postojiRanglista(final String nazivKviza, StringBuilder idKviza) {
+        try {
+            String dokument = "{\"structuredQuery\": {" +
+                    "\"where\" : {" +
+                    "\"fieldFilter\" : { " +
+                    "\"field\": {\"fieldPath\": \"nazivKviza\"}, " +
+                    "\"op\":\"EQUAL\", " +
+                    "\"value\": {\"stringValue\": \"" + nazivKviza + "\"}}}," +
+                    "\"select\": { \"fields\": [{\"fieldPath\": \"naziv\"} ] }, " +
+                    "\"from\": [{\"collectionId\": \"" + "Rangliste" + "\"}]," +
+                    "\"limit\": 1000 }}";
+            String urlString = "https://firestore.googleapis.com/v1/projects/rma19poljcicfaris20/databases/(default)/documents:runQuery?access_token=";
+            HttpURLConnection urlConnection = getHTTPConnection(urlString);
+            urlConnection.setDoOutput(true);
+            urlConnection.setRequestMethod("POST");
+            urlConnection.setRequestProperty("Content-Type", "application/json");
+            urlConnection.setRequestProperty("Accept", "application/json");
+
+            try (OutputStream os = urlConnection.getOutputStream()) {
+                byte[] input = dokument.getBytes(StandardCharsets.UTF_8);
+                os.write(input, 0, input.length);
+            }
+            urlConnection.getResponseCode();
+
+            InputStream in = urlConnection.getInputStream();
+            String rezultat = convertStreamToString(in);
+            rezultat = "{\"documents\": " + rezultat + "}";
+            JSONObject jsonObject = new JSONObject(rezultat);
+            JSONArray documents = jsonObject.getJSONArray("documents");
+            JSONObject jsonObject2 = documents.getJSONObject(0);
+
+            try {
+                jsonObject2.getJSONObject("document");
+                JSONObject document = jsonObject2.getJSONObject("document");
+                String id = document.getString("name");
+                id = id.substring(id.lastIndexOf("/") + 1);
+                idKviza.append(id);
+            } catch (JSONException ignored) {
+                // Ne postoji dokument sa datim id-om
+                return false;
+            }
+        } catch (IOException | JSONException greska) {
+            greska.printStackTrace();
+        }
+        return true;
+    }
+
     public static void dodajIgraca(final String nazivKviza, final String ime, final double procenatTacnih) {
         new AsyncTask<String, Integer, Void>() {
             @Override
             protected Void doInBackground(String... strings) {
                 try {
-                    String urlString = "https://firestore.googleapis.com/v1/projects/rma19poljcicfaris20/databases/(default)/documents/Rangliste?access_token=";
-                    HttpURLConnection urlConnection = getHTTPConnection(urlString);
-                    urlConnection.setDoOutput(true);
-                    urlConnection.setRequestMethod("POST");
-                    urlConnection.setRequestProperty("Content-Type", "application/json");
-                    urlConnection.setRequestProperty("Accept", "application/json");
-
-                    String dokument = "{ \"fields\": {\"nazivKviza\":{\"stringValue\":\"" + nazivKviza + "\"}," +
-                            "\"lista\":{\"mapValue\":{\"fields\":{\"pozicija\":{\"integerValue\":\"" + getPozicijaIgraca(nazivKviza, procenatTacnih) + "\"}," +
-                            "\"igrac\":{\"mapValue\":{\"fields\":{\"imeIgraca\":{\"stringValue\":\"" + ime +
-                            "\"},\"procenatTacnih\":{\"doubleValue\":\"" + procenatTacnih + "\"}}}}}}}}}";
-                    try (OutputStream os = urlConnection.getOutputStream()) {
-                        byte[] input = dokument.getBytes(StandardCharsets.UTF_8);
-                        os.write(input, 0, input.length);
-                    }
-                    urlConnection.getResponseCode();
-                } catch (IOException | JSONException greska) {
+                    StringBuilder idRangliste = new StringBuilder();
+                    if (!postojiRanglista(nazivKviza, idRangliste))
+                        dodajRanglistu(nazivKviza, ime, procenatTacnih);
+                    else
+                        updateRanglistu(idRangliste.toString(), nazivKviza, ime, procenatTacnih);
+                } catch (IOException greska) {
                     greska.printStackTrace();
                 }
                 return null;
@@ -184,55 +253,80 @@ public class Firebase {
         }.execute();
     }
 
-    private static int getPozicijaIgraca(String nazivKvizaString, double procenatTacnihParam) throws IOException, JSONException {
-        int pozicijaIgraca = 1;
+    private static void dodajRanglistu(String nazivKviza, String ime, double procenatTacnih) throws IOException {
         String urlString = "https://firestore.googleapis.com/v1/projects/rma19poljcicfaris20/databases/(default)/documents/Rangliste?access_token=";
         HttpURLConnection urlConnection = getHTTPConnection(urlString);
-
-        InputStream in = new BufferedInputStream((urlConnection.getInputStream()));
-        String rezultat = convertStreamToString(in);
-        JSONObject root = new JSONObject(rezultat);
-        JSONArray documents;
-        try {
-            documents = root.getJSONArray("documents");
-        } catch (JSONException ignored) {
-            // prazna rang lista
-            return pozicijaIgraca;
+        urlConnection.setDoOutput(true);
+        urlConnection.setRequestMethod("POST");
+        urlConnection.setRequestProperty("Content-Type", "application/json");
+        urlConnection.setRequestProperty("Accept", "application/json");
+        String dokument = "{ \"fields\": {\"nazivKviza\":{\"stringValue\":\"" + nazivKviza + "\"}," +
+                "\"lista\":{\"mapValue\":{\"fields\":{\"" + "1" + "\": {" +
+                "\"mapValue\":{\"fields\":{\"" + ime + "\": {\"doubleValue\":\"" + procenatTacnih + "\"}}}}}}}}}";
+        try (OutputStream os = urlConnection.getOutputStream()) {
+            byte[] input = dokument.getBytes(StandardCharsets.UTF_8);
+            os.write(input, 0, input.length);
         }
-        for (int i = 0; i < documents.length(); i++) {
-            JSONObject document = documents.getJSONObject(i);
-            JSONObject fields = document.getJSONObject("fields");
-            JSONObject nazivKviza = fields.getJSONObject("nazivKviza");
-            if (!nazivKviza.getString("stringValue").equals(nazivKvizaString))
-                continue;
-            String name = document.getString("name");
+        urlConnection.getResponseCode();
+    }
+
+    private static ArrayList<Pair<String, Double>> vratiRanglistu(String idRangliste) {
+        ArrayList<Pair<String, Double>> igraci = new ArrayList<>();
+        try {
+            String urlString = "https://firestore.googleapis.com/v1/projects/rma19poljcicfaris20/databases/(default)/documents/Rangliste/" + idRangliste + "?access_token=";
+            HttpURLConnection urlConnection = getHTTPConnection(urlString);
+
+            InputStream in = new BufferedInputStream((urlConnection.getInputStream()));
+            String rezultat = convertStreamToString(in);
+            JSONObject root = new JSONObject(rezultat);
+            JSONObject fields = root.getJSONObject("fields");
             JSONObject lista = fields.getJSONObject("lista");
             JSONObject mapValue = lista.getJSONObject("mapValue");
             JSONObject fields1 = mapValue.getJSONObject("fields");
-            JSONObject pozicija = fields1.getJSONObject("pozicija");
-            int pozicijaInt = pozicija.getInt("integerValue");
-            JSONObject igrac1 = fields1.getJSONObject("igrac");
-            JSONObject mapValue1 = igrac1.getJSONObject("mapValue");
-            JSONObject fields2 = mapValue1.getJSONObject("fields");
-            JSONObject procenatTacnih = fields2.getJSONObject("procenatTacnih");
-            double procenatTacnihDouble = procenatTacnih.getDouble("doubleValue");
-            if (procenatTacnihDouble >= procenatTacnihParam)
-                pozicijaIgraca++;
-            else
-                postaviPoziciju(name.substring(name.lastIndexOf("/") + 1), pozicijaInt + 1);
+            Iterator<String> keys = fields1.keys();
+            while (keys.hasNext()) {
+                String pozicijaString = keys.next();
+                JSONObject pozicija = fields1.getJSONObject(pozicijaString);
+                JSONObject mapValue1 = pozicija.getJSONObject("mapValue");
+                JSONObject fields2 = mapValue1.getJSONObject("fields");
+                Iterator<String> keys1 = fields2.keys();
+                while (keys1.hasNext()) {
+                    String imeString = keys1.next();
+                    JSONObject ime = fields2.getJSONObject(imeString);
+                    double procenatTacnih = ime.getDouble("doubleValue");
+                    igraci.add(new Pair<>(imeString, procenatTacnih));
+                }
+            }
+        } catch (IOException | JSONException greska) {
+            greska.printStackTrace();
         }
-        return pozicijaIgraca;
+        return igraci;
     }
 
-    private static void postaviPoziciju(String idRangListe, int novaPozicija) throws IOException {
-        String urlString = "https://firestore.googleapis.com/v1/projects/rma19poljcicfaris20/databases/(default)/documents/Rangliste/?" + idRangListe + "&access_token=";
+    private static void updateRanglistu(String idRangliste, String nazivKviza, String ime, double procenatTacnih) throws IOException {
+        String urlString = "https://firestore.googleapis.com/v1/projects/rma19poljcicfaris20/databases/(default)/documents/Rangliste/" + idRangliste + "?access_token=";
         HttpURLConnection urlConnection = getHTTPConnection(urlString);
         urlConnection.setDoOutput(true);
         urlConnection.setRequestMethod("PATCH");
-        urlConnection.setRequestProperty("Content-Type", "application/json-patch");
+        urlConnection.setRequestProperty("Content-Type", "application/json");
         urlConnection.setRequestProperty("Accept", "application/json");
+        ArrayList<Pair<String, Double>> igraci = vratiRanglistu(idRangliste);
+        igraci.add(new Pair<>(ime, procenatTacnih));
+        Collections.sort(igraci, new Comparator<Pair<String, Double>>() {
+            @Override
+            public int compare(Pair<String, Double> s1, Pair<String, Double> s2) {
+                return s2.second.compareTo(s1.second);
+            }
+        });
+        String dokument = "{ \"fields\": {\"nazivKviza\":{\"stringValue\":\"" + nazivKviza + "\"},\"lista\":{\"mapValue\":{\"fields\":{";
+        for (int i = 0; i < igraci.size(); i++) {
+            if (i != igraci.size() - 1)
+                dokument += "\"" + (i + 1) + "\": {\"mapValue\":{\"fields\":{\"" + igraci.get(i).first + "\": {\"doubleValue\":\"" + igraci.get(i).second + "\"}}}},";
+            else
+                dokument += "\"" + (i + 1) + "\": {\"mapValue\":{\"fields\":{\"" + igraci.get(i).first + "\": {\"doubleValue\":\"" + igraci.get(i).second + "\"}}}}";
+        }
+        dokument += "}}}}}";
 
-        String dokument = "{\"pozicija\":{\"integerValue\":\"" + novaPozicija + "\"}}";
         try (OutputStream os = urlConnection.getOutputStream()) {
             byte[] input = dokument.getBytes(StandardCharsets.UTF_8);
             os.write(input, 0, input.length);
@@ -363,35 +457,35 @@ public class Firebase {
             @Override
             protected ArrayList<String> doInBackground(String... strings) {
                 ArrayList<String> igraci = new ArrayList<>();
+                StringBuilder idRangliste = new StringBuilder();
+                if (!postojiRanglista(kviz.getNaziv(), idRangliste))
+                    return igraci;
                 try {
-                    String urlString = "https://firestore.googleapis.com/v1/projects/rma19poljcicfaris20/databases/(default)/documents/Rangliste?access_token=";
+                    String urlString = "https://firestore.googleapis.com/v1/projects/rma19poljcicfaris20/databases/(default)/documents/Rangliste/" + idRangliste.toString() +  "?access_token=";
                     HttpURLConnection urlConnection = getHTTPConnection(urlString);
 
                     InputStream in = new BufferedInputStream((urlConnection.getInputStream()));
                     String rezultat = convertStreamToString(in);
                     JSONObject root = new JSONObject(rezultat);
-                    JSONArray documents = root.getJSONArray("documents");
-                    for (int i = 0; i < documents.length(); i++) {
-                        JSONObject pitanjeJson = documents.getJSONObject(i);
-                        JSONObject fields = pitanjeJson.getJSONObject("fields");
-                        JSONObject nazivKviza = fields.getJSONObject("nazivKviza");
-                        String nazivKvizaString = nazivKviza.getString("stringValue");
-                        if (!kviz.getNaziv().equals(nazivKvizaString))
-                            continue;
-                        JSONObject lista = fields.getJSONObject("lista");
-                        JSONObject mapValue = lista.getJSONObject("mapValue");
-                        JSONObject fields1 = mapValue.getJSONObject("fields");
-                        JSONObject pozicija = fields1.getJSONObject("pozicija");
-                        int pozicijaInt = pozicija.getInt("integerValue");
-                        JSONObject igrac1 = fields1.getJSONObject("igrac");
-                        JSONObject mapValue1 = igrac1.getJSONObject("mapValue");
+
+                    JSONObject fields = root.getJSONObject("fields");
+                    JSONObject lista = fields.getJSONObject("lista");
+                    JSONObject mapValue = lista.getJSONObject("mapValue");
+                    JSONObject fields1 = mapValue.getJSONObject("fields");
+                    Iterator<String> keys = fields1.keys();
+                    while (keys.hasNext()) {
+                        String pozicijaString = keys.next();
+                        JSONObject pozicija = fields1.getJSONObject(pozicijaString);
+                        JSONObject mapValue1 = pozicija.getJSONObject("mapValue");
                         JSONObject fields2 = mapValue1.getJSONObject("fields");
-                        JSONObject imeIgraca = fields2.getJSONObject("imeIgraca");
-                        String imeIgracaString = imeIgraca.getString("stringValue");
-                        JSONObject procenatTacnih = fields2.getJSONObject("procenatTacnih");
-                        double procenatTacnihDouble = procenatTacnih.getDouble("doubleValue");
-                        String igrac = pozicijaInt + ". " + imeIgracaString + " - " + procenatTacnihDouble + "%";
-                        igraci.add(igrac);
+                        Iterator<String> keys1 = fields2.keys();
+                        while (keys1.hasNext()) {
+                            String imeString = keys1.next();
+                            JSONObject ime = fields2.getJSONObject(imeString);
+                            double procenatTacnih = ime.getDouble("doubleValue");
+                            String igrac = pozicijaString + ". " + imeString + " - " + procenatTacnih + "%";
+                            igraci.add(igrac);
+                        }
                     }
                 } catch (IOException | JSONException greska) {
                     greska.printStackTrace();
