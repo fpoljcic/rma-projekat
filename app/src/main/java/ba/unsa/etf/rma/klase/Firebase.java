@@ -27,7 +27,8 @@ import java.util.Iterator;
 
 
 public class Firebase {
-    private static String token;
+    private static String token = "";
+
     private static HttpURLConnection getHTTPConnection(String urlString, boolean refresh) throws IOException {
         if (refresh) {
             InputStream inputStream = Firebase.class.getResourceAsStream("/res/raw/secret.json");
@@ -466,6 +467,7 @@ public class Firebase {
             }
         } catch (IOException | JSONException greska) {
             greska.printStackTrace();
+            return false;
         }
         return true;
     }
@@ -686,7 +688,11 @@ public class Firebase {
             @Override
             protected void onPostExecute(ArrayList<String> idPair) {
                 super.onPostExecute(idPair);
-                Pair<String, Pitanje> pair = new Pair<>(idPair.get(0), pitanjePair);
+                Pair<String, Pitanje> pair;
+                if (idPair.size() != 0)
+                    pair = new Pair<>(idPair.get(0), pitanjePair);
+                else
+                    pair = new Pair<>(null, pitanjePair);
                 pitanjeInterface.getPitanjeId(pair);
             }
 

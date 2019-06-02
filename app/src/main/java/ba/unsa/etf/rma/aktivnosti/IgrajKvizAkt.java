@@ -21,6 +21,7 @@ public class IgrajKvizAkt extends AppCompatActivity implements InformacijeFrag.O
     private PitanjeFrag pitanjeFrag;
     private InformacijeFrag informacijeFrag;
     private RangLista rangLista;
+    private boolean isActive = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -28,6 +29,12 @@ public class IgrajKvizAkt extends AppCompatActivity implements InformacijeFrag.O
         setContentView(R.layout.activity_igraj_kviz_akt);
         getIntentData();
         dodajFragmente();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        isActive = false;
     }
 
     private void ukloniFragment(FragmentManager fragmentManager, int resource) {
@@ -91,6 +98,7 @@ public class IgrajKvizAkt extends AppCompatActivity implements InformacijeFrag.O
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
         rangLista = RangLista.newInstance(igraci);
         fragmentTransaction.add(R.id.pitanjePlace, rangLista);
-        fragmentTransaction.commit();
+        if (isActive)
+            fragmentTransaction.commit();
     }
 }

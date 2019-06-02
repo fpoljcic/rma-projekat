@@ -74,6 +74,7 @@ public class PitanjeFrag extends Fragment {
         linkControls(view);
         if (pitanja.isEmpty()) {
             tekstPitanjaField.setText(getString(R.string.kviz_je_zavrsen));
+            addRangListaFragment();
             return view;
         }
         setData(view);
