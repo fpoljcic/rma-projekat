@@ -266,12 +266,21 @@ public class DodajKvizAkt extends AppCompatActivity implements Firebase.PitanjeI
                 Firebase.dodajKategoriju(novaKategorija);
             } else
                 categorySpinner.setSelection(kategorije.indexOf(novaKategorija));
-            pitanja.clear();
-            pitanja.addAll(tempPitanja);
-            pitanja.add(new Pitanje());
+            for (int i = 0; i < pitanja.size() - 1; i++) {
+                mogucaPitanja.add(pitanja.get(i));
+            }
+            boolean postoji = false;
+            for (Pitanje pitanje : tempPitanja) {
+                if (mogucaPitanja.contains(pitanje)) {
+                    if (!postoji) // sluzi da se alert prikaze samo kod prvog duplog pitanja
+                        showAlert("Kviz kojeg importujete sadrzi pitanja koja vec postoje u bazi, bit ce ucitana samo nova pitanja!");
+                    postoji = true;
+                } else {
+                    Firebase.dodajPitanje(pitanje, this);
+                    pitanja.add(pitanja.size() - 1, pitanje);
+                }
+            }
             listAdapter.notifyDataSetChanged();
-            for (Pitanje pitanje : tempPitanja)
-                Firebase.dodajPitanje(pitanje, this);
         }
     }
 
@@ -354,7 +363,7 @@ public class DodajKvizAkt extends AppCompatActivity implements Firebase.PitanjeI
 
         optListAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, mogucaPitanja);
         optionalQuestionsList.setAdapter(optListAdapter);
-        Firebase.pitanja( this);
+        Firebase.pitanja(this);
 
         int layoutID = android.R.layout.simple_list_item_1;
         kategorije = (ArrayList<Kategorija>) intent.getSerializableExtra("kategorija");
