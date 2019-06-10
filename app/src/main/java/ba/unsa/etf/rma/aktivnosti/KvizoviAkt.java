@@ -4,32 +4,35 @@ import android.Manifest;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.os.Bundle;
 import android.provider.CalendarContract;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.FrameLayout;
 import android.widget.ListView;
 import android.widget.Spinner;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 
 import ba.unsa.etf.rma.R;
+import ba.unsa.etf.rma.adapteri.ListAdapter;
 import ba.unsa.etf.rma.fragmenti.DetailFrag;
 import ba.unsa.etf.rma.fragmenti.ListFrag;
 import ba.unsa.etf.rma.klase.Firebase;
 import ba.unsa.etf.rma.klase.Kategorija;
 import ba.unsa.etf.rma.klase.Kviz;
-import ba.unsa.etf.rma.adapteri.ListAdapter;
+import ba.unsa.etf.rma.klase.NetworkChangeReceiver;
 
 public class KvizoviAkt extends AppCompatActivity implements ListFrag.OnFragmentInteractionListener, DetailFrag.OnFragmentInteractionListener, Firebase.KvizInterface, Firebase.KategorijaInterface {
     private Spinner categorySpinner;
@@ -42,6 +45,9 @@ public class KvizoviAkt extends AppCompatActivity implements ListFrag.OnFragment
     private boolean siriEkran;
     private ListFrag listFrag;
     private DetailFrag detailFrag;
+    private IntentFilter filter = new IntentFilter("android.net.conn.CONNECTIVITY_CHANGE");
+    private NetworkChangeReceiver receiver = new NetworkChangeReceiver(this);
+    private boolean hasInternetAccess;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -66,6 +72,19 @@ public class KvizoviAkt extends AppCompatActivity implements ListFrag.OnFragment
             categorySpinner.setSelection(index);
         }
     }
+
+    @Override
+    protected void onPostResume() {
+        super.onPostResume();
+        registerReceiver(receiver, filter);
+    }
+
+    @Override
+    protected void onPause() {
+        unregisterReceiver(receiver);
+        super.onPause();
+    }
+
 
     @Override
     public void addKvizovi(ArrayList<Kviz> kvizovi) {
@@ -125,7 +144,10 @@ public class KvizoviAkt extends AppCompatActivity implements ListFrag.OnFragment
         quizList.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
             @Override
             public boolean onItemLongClick(AdapterView<?> adapterView, View view, int position, long id) {
-                urediKviz(position);
+                if (hasInternetAccess)
+                    urediKviz(position);
+                else
+                    Toast.makeText(getApplicationContext(), "Nemate internet konekcije!", Toast.LENGTH_SHORT).show();
                 return true;
             }
         });
@@ -351,4 +373,17 @@ public class KvizoviAkt extends AppCompatActivity implements ListFrag.OnFragment
         }
         categoryAdapter.notifyDataSetChanged();
     }
+
+    public void notifyNetChange(boolean internetAccess) {
+        this.hasInternetAccess = internetAccess;
+    }
+
+
+    /*
+    private boolean isNetworkAvailable() {
+        ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
+        return activeNetworkInfo != null && activeNetworkInfo.isConnected();
+    }
+    */
 }
