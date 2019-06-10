@@ -1,7 +1,15 @@
 package ba.unsa.etf.rma.aktivnosti;
 
+import android.Manifest;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.database.Cursor;
+import android.provider.CalendarContract;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentManager;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -12,6 +20,8 @@ import android.widget.ListView;
 import android.widget.Spinner;
 
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 
 import ba.unsa.etf.rma.R;
 import ba.unsa.etf.rma.fragmenti.DetailFrag;
@@ -141,10 +151,60 @@ public class KvizoviAkt extends AppCompatActivity implements ListFrag.OnFragment
 
     private void igrajKviz(int position) {
         if (prikazaniKvizovi.get(position) != null) {
+            if (hasEvent(position))
+                return;
             Intent myIntent = new Intent(KvizoviAkt.this, IgrajKvizAkt.class);
             myIntent.putExtra("kviz", prikazaniKvizovi.get(position));
             startActivityForResult(myIntent, 2);
         }
+    }
+
+    private boolean hasEvent(int position) {
+        int x = (int) Math.ceil(prikazaniKvizovi.get(position).getPitanja().size() / 2.0);
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_CALENDAR) != PackageManager.PERMISSION_GRANTED) {
+            // Permission is not granted
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_CALENDAR}, 0);
+        }
+
+        // Imate događaj u kalendaru za Y minuta! ako je Y < X, Y vrijeme do prvog događaja koji slijedi
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTimeInMillis(new Date().getTime());
+        long currentDateTime = calendar.getTimeInMillis();
+        calendar.add(Calendar.MINUTE, x);
+        long quizEndDateTime = calendar.getTimeInMillis();
+        String[] projection = new String[]{CalendarContract.Events.DTSTART, CalendarContract.Events.DTEND};
+        String selection = CalendarContract.Events.DTEND + " >= ?";
+        String[] selectionArgs = new String[]{Long.toString(currentDateTime)};
+
+        Cursor cur = getContentResolver().query(CalendarContract.Events.CONTENT_URI, projection, selection, selectionArgs, null);
+        if (cur == null)
+            return false;
+        while (cur.moveToNext()) {
+            long eventStartDateTime = cur.getLong(0);
+            if (eventStartDateTime < quizEndDateTime) {
+                if (eventStartDateTime < currentDateTime)
+                    showAlert("Imate trenutno aktivan događaj u kalendaru!");
+                else
+                    showAlert("Imate događaj u kalendaru za " + ((eventStartDateTime - new Date().getTime()) / 1000) / 60 + " minuta!");
+                cur.close();
+                return true;
+            }
+        }
+        cur.close();
+        return false;
+    }
+
+    private void showAlert(String message) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage(message);
+        builder.setCancelable(false);
+        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                // nothing?
+            }
+        });
+        AlertDialog alert = builder.create();
+        alert.show();
     }
 
     private void urediKviz(int position) {
