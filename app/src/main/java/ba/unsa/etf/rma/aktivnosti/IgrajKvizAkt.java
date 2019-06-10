@@ -2,10 +2,12 @@ package ba.unsa.etf.rma.aktivnosti;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.provider.AlarmClock;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
+import android.text.format.Time;
 
 import java.util.ArrayList;
 
@@ -29,6 +31,29 @@ public class IgrajKvizAkt extends AppCompatActivity implements InformacijeFrag.O
         setContentView(R.layout.activity_igraj_kviz_akt);
         getIntentData();
         dodajFragmente();
+        setAlarm();
+    }
+
+    private void setAlarm() {
+        Time time = new Time();
+        time.setToNow();
+        int hour = time.hour;
+        int minute = time.minute;
+        if (time.second > 0)
+            minute++;
+        int x = (int) Math.ceil(kviz.getPitanja().size() / 2.0);
+        x += minute;
+        while (x >= 60) {
+            hour++;
+            x -= 60;
+        }
+        Intent alarmIntent = new Intent(AlarmClock.ACTION_SET_ALARM);
+        alarmIntent.putExtra(AlarmClock.EXTRA_MESSAGE, "Alarm za kraj kviza: " + kviz.getNaziv());
+        alarmIntent.putExtra(AlarmClock.EXTRA_HOUR, hour);
+        alarmIntent.putExtra(AlarmClock.EXTRA_MINUTES, x);
+        alarmIntent.putExtra(AlarmClock.EXTRA_SKIP_UI, true);
+
+        startActivity(alarmIntent);
     }
 
     @Override
