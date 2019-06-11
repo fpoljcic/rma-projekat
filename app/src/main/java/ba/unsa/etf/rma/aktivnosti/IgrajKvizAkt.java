@@ -31,7 +31,8 @@ public class IgrajKvizAkt extends AppCompatActivity implements InformacijeFrag.O
         setContentView(R.layout.activity_igraj_kviz_akt);
         getIntentData();
         dodajFragmente();
-        setAlarm();
+        if (kviz.getPitanja().size() != 0)
+            setAlarm();
     }
 
     private void setAlarm() {

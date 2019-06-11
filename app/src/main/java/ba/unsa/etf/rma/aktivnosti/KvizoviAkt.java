@@ -29,6 +29,7 @@ import ba.unsa.etf.rma.R;
 import ba.unsa.etf.rma.adapteri.ListAdapter;
 import ba.unsa.etf.rma.fragmenti.DetailFrag;
 import ba.unsa.etf.rma.fragmenti.ListFrag;
+import ba.unsa.etf.rma.klase.DatabaseHelper;
 import ba.unsa.etf.rma.klase.Firebase;
 import ba.unsa.etf.rma.klase.Kategorija;
 import ba.unsa.etf.rma.klase.Kviz;
@@ -48,11 +49,13 @@ public class KvizoviAkt extends AppCompatActivity implements ListFrag.OnFragment
     private IntentFilter filter = new IntentFilter("android.net.conn.CONNECTIVITY_CHANGE");
     private NetworkChangeReceiver receiver = new NetworkChangeReceiver(this);
     private boolean hasInternetAccess;
+    private DatabaseHelper database;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        database = new DatabaseHelper(getApplicationContext());
         int index = 0;
         if (savedInstanceState != null) {
             index = restoreData(savedInstanceState);
