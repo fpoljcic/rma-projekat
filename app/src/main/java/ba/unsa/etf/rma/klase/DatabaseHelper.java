@@ -110,6 +110,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         onCreate(database);
     }
 
+
     public void closeDatabase() {
         SQLiteDatabase db = this.getReadableDatabase();
         if (db != null && db.isOpen())
