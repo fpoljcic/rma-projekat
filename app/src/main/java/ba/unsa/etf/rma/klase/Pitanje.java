@@ -59,6 +59,14 @@ public class Pitanje implements Serializable {
         return odgovori;
     }
 
+    public int getIndexTacnog() {
+        for (int i = 0; i < odgovori.size(); i++) {
+            if (odgovori.get(i).equals(tacan))
+                return i;
+        }
+        return -1;
+    }
+
     @Override
     public String toString() {
         if (naziv == null)

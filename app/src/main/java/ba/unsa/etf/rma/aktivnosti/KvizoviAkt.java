@@ -2,11 +2,14 @@ package ba.unsa.etf.rma.aktivnosti;
 
 import android.Manifest;
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.provider.CalendarContract;
 import android.support.v4.app.ActivityCompat;
@@ -56,6 +59,9 @@ public class KvizoviAkt extends AppCompatActivity implements ListFrag.OnFragment
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         database = new DatabaseHelper(getApplicationContext());
+        hasInternetAccess = isNetworkAvailable();
+        if (hasInternetAccess)
+            database.syncFirebase();
         int index = 0;
         if (savedInstanceState != null) {
             index = restoreData(savedInstanceState);
@@ -321,8 +327,12 @@ public class KvizoviAkt extends AppCompatActivity implements ListFrag.OnFragment
         categoryAdapter = new ArrayAdapter<>(this, layoutID, kategorije);
         categorySpinner.setAdapter(categoryAdapter);
         quizList = findViewById(R.id.lvKvizovi);
+        //if (!hasInternetAccess)
+        //    prikazaniKvizovi = database.kvizovi(null);
+        kvizovi.addAll(prikazaniKvizovi);
         listAdapter = new ListAdapter(this, prikazaniKvizovi, getResources());
         quizList.setAdapter(listAdapter);
+        //listAdapter.notifyDataSetChanged();
     }
 
     @Override
@@ -378,15 +388,15 @@ public class KvizoviAkt extends AppCompatActivity implements ListFrag.OnFragment
     }
 
     public void notifyNetChange(boolean internetAccess) {
+        if (!hasInternetAccess && internetAccess)
+            database.syncFirebase();
         this.hasInternetAccess = internetAccess;
     }
 
-
-    /*
     private boolean isNetworkAvailable() {
         ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
         return activeNetworkInfo != null && activeNetworkInfo.isConnected();
     }
-    */
+
 }

@@ -473,7 +473,7 @@ public class Firebase {
     }
 
     public interface RangListaInterface {
-        void addIgraci(ArrayList<String> igraci);
+        void addIgraci(ArrayList<String> igraci, Kviz kviz);
     }
 
     public static void rangLista(final Kviz kviz, final RangListaInterface rangListaInterface) {
@@ -489,7 +489,7 @@ public class Firebase {
                         return poz1 - poz2;
                     }
                 });
-                rangListaInterface.addIgraci(igraci);
+                rangListaInterface.addIgraci(igraci, kviz);
             }
 
             @Override

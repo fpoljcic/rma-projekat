@@ -84,6 +84,12 @@ public class ListAdapter extends BaseAdapter {
                 @Override
                 public void onDataLoaded() {
                     // This happens on UI thread, and is guaranteed to be called.
+                    /*
+                        String id = object.getKategorija().getId();
+                        Icon icon = null;
+                        if (id != null)
+                            icon = iconHelper.getIcon(Integer.valueOf(id));
+                    */
                     String id = object.getKategorija().getId();
                     Icon icon = iconHelper.getIcon(Integer.valueOf(id));
                     if (holder.name.getText().toString().equals(activity.getString(R.string.dodaj_kviz)))

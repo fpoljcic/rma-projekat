@@ -118,7 +118,7 @@ public class IgrajKvizAkt extends AppCompatActivity implements InformacijeFrag.O
     }
 
     @Override
-    public void addIgraci(ArrayList<String> igraci) {
+    public void addIgraci(ArrayList<String> igraci, Kviz kviz) {
         FragmentManager fragmentManager = getSupportFragmentManager();
         ukloniFragment(fragmentManager, R.id.pitanjePlace);
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
