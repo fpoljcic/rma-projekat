@@ -25,6 +25,8 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
 
+import ba.unsa.etf.rma.aktivnosti.KvizoviAkt;
+
 
 public class Firebase {
     private static String token = "";
@@ -48,6 +50,7 @@ public class Firebase {
             @Override
             protected Void doInBackground(String... strings) {
                 try {
+                    DatabaseHelper.getInstance().dodajKviz(kviz);
                     dodajKvizFun(kviz, idPitanja);
                 } catch (IOException greska) {
                     greska.printStackTrace();
@@ -96,12 +99,15 @@ public class Firebase {
             @Override
             protected Void doInBackground(String... strings) {
                 try {
+                    DatabaseHelper.getInstance().azurirajKviz(nazivPostojecegKviza, noviKviz);
                     if (!nazivPostojecegKviza.equals(noviKviz.getNaziv())) {
                         dodajKvizFun(noviKviz, idPitanja);
                         obrisiKviz(nazivPostojecegKviza);
                         StringBuilder idRangliste = new StringBuilder();
-                        if (postojiRanglista(nazivPostojecegKviza, idRangliste))
+                        if (postojiRanglista(nazivPostojecegKviza, idRangliste)) {
+                            DatabaseHelper.getInstance().updateNazivRangliste(nazivPostojecegKviza, noviKviz.getNaziv());
                             updateNazivRangliste(idRangliste, nazivPostojecegKviza, noviKviz.getNaziv());
+                        }
                     } else
                         updateKviz(noviKviz, idPitanja);
                 } catch (IOException | JSONException greska) {
@@ -162,6 +168,8 @@ public class Firebase {
 
             @Override
             protected ArrayList<Pair<String, Pitanje>> doInBackground(String... strings) {
+                if (!KvizoviAkt.INTERNET_ACCESS)
+                    return DatabaseHelper.getInstance().pitanja();
                 ArrayList<Pair<String, Pitanje>> pitanja = new ArrayList<>();
                 try {
                     String urlString = "https://firestore.googleapis.com/v1/projects/rma19poljcicfaris20/databases/(default)/documents/Pitanja?access_token=";
@@ -252,6 +260,7 @@ public class Firebase {
         new AsyncTask<String, Integer, Void>() {
             @Override
             protected Void doInBackground(String... strings) {
+                DatabaseHelper.getInstance().dodajIgraca(nazivKviza, procenatTacnih, ime);
                 try {
                     StringBuilder idRangliste = new StringBuilder();
                     if (!postojiRanglista(nazivKviza, idRangliste))
@@ -494,6 +503,8 @@ public class Firebase {
 
             @Override
             protected ArrayList<String> doInBackground(String... strings) {
+                if (!KvizoviAkt.INTERNET_ACCESS)
+                    return DatabaseHelper.getInstance().rangLista(kviz);
                 ArrayList<String> igraci = new ArrayList<>();
                 StringBuilder idRangliste = new StringBuilder();
                 if (!postojiRanglista(kviz.getNaziv(), idRangliste))
@@ -547,6 +558,8 @@ public class Firebase {
 
             @Override
             protected ArrayList<Kategorija> doInBackground(String... strings) {
+                if (!KvizoviAkt.INTERNET_ACCESS)
+                    return DatabaseHelper.getInstance().kategorije();
                 ArrayList<Kategorija> kategorije = new ArrayList<>();
                 try {
                     String urlString = "https://firestore.googleapis.com/v1/projects/rma19poljcicfaris20/databases/(default)/documents/Kategorije?access_token=";
@@ -588,6 +601,8 @@ public class Firebase {
 
             @Override
             protected ArrayList<Kviz> doInBackground(String... strings) {
+                if (!KvizoviAkt.INTERNET_ACCESS)
+                    return DatabaseHelper.getInstance().kvizovi(kategorija);
                 ArrayList<Kviz> kvizovi = new ArrayList<>();
                 try {
                     String urlString = "https://firestore.googleapis.com/v1/projects/rma19poljcicfaris20/databases/(default)/documents/Kvizovi?access_token=";
@@ -698,6 +713,7 @@ public class Firebase {
 
             @Override
             protected ArrayList<String> doInBackground(String... strings) {
+                DatabaseHelper.getInstance().dodajPitanje(pitanje);
                 ArrayList<String> idPair = new ArrayList<>();
                 try {
                     String urlString = "https://firestore.googleapis.com/v1/projects/rma19poljcicfaris20/databases/(default)/documents/Pitanja?access_token=";
@@ -756,6 +772,7 @@ public class Firebase {
         new AsyncTask<String, Integer, Void>() {
             @Override
             protected Void doInBackground(String... strings) {
+                DatabaseHelper.getInstance().dodajKategoriju(kategorija);
                 try {
                     String naziv = kategorija.getNaziv().replaceAll(" ", "_");
                     String urlString = "https://firestore.googleapis.com/v1/projects/rma19poljcicfaris20/databases/(default)/documents/Kategorije?documentId=" + naziv + "&access_token=";

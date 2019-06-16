@@ -51,35 +51,36 @@ public class KvizoviAkt extends AppCompatActivity implements ListFrag.OnFragment
     private DetailFrag detailFrag;
     private IntentFilter filter = new IntentFilter("android.net.conn.CONNECTIVITY_CHANGE");
     private NetworkChangeReceiver receiver = new NetworkChangeReceiver(this);
-    private boolean hasInternetAccess;
-    private DatabaseHelper database;
+    public static boolean INTERNET_ACCESS;
+    public static DatabaseHelper DATABASE;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        database = new DatabaseHelper(getApplicationContext());
-        hasInternetAccess = isNetworkAvailable();
-        if (hasInternetAccess)
-            database.syncFirebase();
+        DATABASE = new DatabaseHelper(getApplicationContext());
+        // DATABASE.ocistiBazu();
+        INTERNET_ACCESS = isNetworkAvailable();
+        if (INTERNET_ACCESS)
+            DATABASE.syncFirebase();
         int index = 0;
         if (savedInstanceState != null) {
             index = restoreData(savedInstanceState);
         } else
             addStartData();
         checkScreenSize();
-        if (siriEkran) {
-            Firebase.kvizovi(null, detailFrag);
-            Firebase.kategorije(listFrag);
-        } else {
-            Firebase.kvizovi(null, this);
-            Firebase.kategorije(this);
-        }
+        loadData();
         if (!siriEkran) {
             linkControls();
             setListeners();
             categorySpinner.setSelection(index);
         }
+    }
+
+    @Override
+    protected void onDestroy() {
+        DATABASE.closeDatabase();
+        super.onDestroy();
     }
 
     @Override
@@ -92,6 +93,16 @@ public class KvizoviAkt extends AppCompatActivity implements ListFrag.OnFragment
     protected void onPause() {
         unregisterReceiver(receiver);
         super.onPause();
+    }
+
+    private void loadData() {
+        if (siriEkran) {
+            Firebase.kvizovi(null, detailFrag);
+            Firebase.kategorije(listFrag);
+        } else {
+            Firebase.kvizovi(null, this);
+            Firebase.kategorije(this);
+        }
     }
 
 
@@ -153,7 +164,7 @@ public class KvizoviAkt extends AppCompatActivity implements ListFrag.OnFragment
         quizList.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
             @Override
             public boolean onItemLongClick(AdapterView<?> adapterView, View view, int position, long id) {
-                if (hasInternetAccess)
+                if (INTERNET_ACCESS)
                     urediKviz(position);
                 else
                     Toast.makeText(getApplicationContext(), "Nemate internet konekcije!", Toast.LENGTH_SHORT).show();
@@ -327,12 +338,8 @@ public class KvizoviAkt extends AppCompatActivity implements ListFrag.OnFragment
         categoryAdapter = new ArrayAdapter<>(this, layoutID, kategorije);
         categorySpinner.setAdapter(categoryAdapter);
         quizList = findViewById(R.id.lvKvizovi);
-        //if (!hasInternetAccess)
-        //    prikazaniKvizovi = database.kvizovi(null);
-        kvizovi.addAll(prikazaniKvizovi);
         listAdapter = new ListAdapter(this, prikazaniKvizovi, getResources());
         quizList.setAdapter(listAdapter);
-        //listAdapter.notifyDataSetChanged();
     }
 
     @Override
@@ -388,9 +395,12 @@ public class KvizoviAkt extends AppCompatActivity implements ListFrag.OnFragment
     }
 
     public void notifyNetChange(boolean internetAccess) {
-        if (!hasInternetAccess && internetAccess)
-            database.syncFirebase();
-        this.hasInternetAccess = internetAccess;
+        if (internetAccess) {
+            loadData();
+            DATABASE.syncFirebase();
+            DATABASE.syncFirebaseIgraci();
+        }
+        INTERNET_ACCESS = internetAccess;
     }
 
     private boolean isNetworkAvailable() {

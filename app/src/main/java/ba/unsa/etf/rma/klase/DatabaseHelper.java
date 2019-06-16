@@ -9,6 +9,8 @@ import android.util.Pair;
 
 import java.util.ArrayList;
 
+import ba.unsa.etf.rma.aktivnosti.KvizoviAkt;
+
 public class DatabaseHelper extends SQLiteOpenHelper implements Firebase.KategorijaInterface, Firebase.KvizInterface, Firebase.PitanjeInterface, Firebase.RangListaInterface {
     public static final String DATABASE_NAME = "rma_baza.db";
 
@@ -48,7 +50,7 @@ public class DatabaseHelper extends SQLiteOpenHelper implements Firebase.Kategor
 
     public static final String CREATE_TABLE_KATEGORIJE = "CREATE TABLE " + KATEGORIJE_TABLE + " (" +
             NAZIV_KATEGORIJE + " TEXT PRIMARY KEY, " +
-            ID_IKONICE + " INTEGER NOT NULL);";
+            ID_IKONICE + " TEXT NOT NULL);";
     public static final String CREATE_TABLE_KVIZOVI = "CREATE TABLE " + KVIZOVI_TABLE + " (" +
             NAZIV_KVIZA + " TEXT PRIMARY KEY, " +
             ID_KATEGORIJE + " INTEGER," +
@@ -70,7 +72,7 @@ public class DatabaseHelper extends SQLiteOpenHelper implements Firebase.Kategor
             "FOREIGN KEY (" + ID_PITANJA_KVIZOVI_PITANJA + ") REFERENCES " + PITANJA_TABLE + "(" + NAZIV_PITANJA + "));";
     public static final String CREATE_TABLE_ODGOVORI = "CREATE TABLE " + ODGOVORI_TABLE + " (" +
             ID_ODGOVORA + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
-            NAZIV_ODGOVORA + " TEXT NOT NULL);";
+            NAZIV_ODGOVORA + " TEXT UNIQUE NOT NULL);";
     public static final String CREATE_TABLE_PITANJA_ODGOVORI = "CREATE TABLE " + PITANJA_ODGOVORI_TABLE + " (" +
             ID_PITANJA_ODGOVORI + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
             ID_PITANJA_PITANJA_ODGOVORI + " TEXT, " +
@@ -78,14 +80,24 @@ public class DatabaseHelper extends SQLiteOpenHelper implements Firebase.Kategor
             "FOREIGN KEY (" + ID_PITANJA_PITANJA_ODGOVORI + ") REFERENCES " + PITANJA_TABLE + "(" + NAZIV_PITANJA + "), " +
             "FOREIGN KEY (" + ID_ODGOVORA_PITANJA_ODGOVORI + ") REFERENCES " + ODGOVORI_TABLE + "(" + ID_ODGOVORA + "));";
 
+    private static DatabaseHelper instance;
+
+    private ArrayList<IgracRecord> igracRecords = new ArrayList<>();
+
+    public static DatabaseHelper getInstance() {
+        return instance;
+    }
+
     // Lokacija | //data/data/ba.unsa.etf.rma.klase/databases/rma_baza.db
 
     public DatabaseHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABSE_VERSION);
+        instance = this;
     }
 
     public DatabaseHelper(Context context, String name, SQLiteDatabase.CursorFactory factory, int version) {
         super(context, name, factory, version);
+        instance = this;
     }
 
     // Poziva se kada ne postoji baza
@@ -122,17 +134,17 @@ public class DatabaseHelper extends SQLiteOpenHelper implements Firebase.Kategor
     }
 
     public boolean dodajKategoriju(Kategorija kategorija) {
-        SQLiteDatabase db = this.getWritableDatabase();
+        SQLiteDatabase db = getWritableDatabase();
 
         ContentValues values = new ContentValues();
         values.put(NAZIV_KATEGORIJE, kategorija.getNaziv());
         values.put(ID_IKONICE, kategorija.getId());
 
-        return db.insert(KATEGORIJE_TABLE, null, values) != -1;
+        return db.insertWithOnConflict(KATEGORIJE_TABLE, null, values, SQLiteDatabase.CONFLICT_IGNORE) != -1;
     }
 
     public boolean dodajKviz(Kviz kviz) {
-        SQLiteDatabase db = this.getWritableDatabase();
+        SQLiteDatabase db = getWritableDatabase();
 
         ContentValues values = new ContentValues();
         values.put(NAZIV_KVIZA, kviz.getNaziv());
@@ -144,11 +156,11 @@ public class DatabaseHelper extends SQLiteOpenHelper implements Firebase.Kategor
             dodajKvizoviPitanjaVezu(kviz, pitanje);
         }
 
-        return db.insert(KVIZOVI_TABLE, null, values) != -1;
+        return db.insertWithOnConflict(KVIZOVI_TABLE, null, values, SQLiteDatabase.CONFLICT_IGNORE) != -1;
     }
 
     public boolean dodajPitanje(Pitanje pitanje) {
-        SQLiteDatabase db = this.getWritableDatabase();
+        SQLiteDatabase db = getWritableDatabase();
 
         ContentValues values = new ContentValues();
         values.put(NAZIV_PITANJA, pitanje.getNaziv());
@@ -159,22 +171,44 @@ public class DatabaseHelper extends SQLiteOpenHelper implements Firebase.Kategor
             dodajPitanjaOdgovoriVezu(pitanje, idOdgovora);
         }
 
-
-        return db.insert(PITANJA_TABLE, null, values) != -1;
+        return db.insertWithOnConflict(PITANJA_TABLE, null, values, SQLiteDatabase.CONFLICT_IGNORE) != -1;
     }
 
     private boolean dodajKvizoviPitanjaVezu(Kviz kviz, Pitanje pitanje) {
-        SQLiteDatabase db = this.getWritableDatabase();
+        String selectQuery = "SELECT * FROM " + KVIZOVI_PITANJA_TABLE + " WHERE " + ID_KVIZA_KVIZOVI_PITANJA + " = '" + kviz.getNaziv() + "' AND " + ID_PITANJA_KVIZOVI_PITANJA + " = '" + pitanje.getNaziv() + "'";
+
+        SQLiteDatabase db = getReadableDatabase();
+        Cursor cursor = db.rawQuery(selectQuery, null);
+
+        if (cursor.moveToFirst()) {
+            cursor.close();
+            return true;
+        }
+        cursor.close();
+
+        db = getWritableDatabase();
 
         ContentValues values = new ContentValues();
         values.put(ID_KVIZA_KVIZOVI_PITANJA, kviz.getNaziv());
         values.put(ID_PITANJA_KVIZOVI_PITANJA, pitanje.getNaziv());
 
-        return db.insert(KVIZOVI_PITANJA_TABLE, null, values) != -1;
+        return db.insertWithOnConflict(KVIZOVI_PITANJA_TABLE, null, values, SQLiteDatabase.CONFLICT_IGNORE) != -1;
     }
 
     public long dodajOdgovor(String odgovor) {
-        SQLiteDatabase db = this.getWritableDatabase();
+        String selectQuery = "SELECT * FROM " + ODGOVORI_TABLE + " WHERE " + NAZIV_ODGOVORA + " = '" + odgovor + "'";
+
+        SQLiteDatabase db = getReadableDatabase();
+        Cursor cursor = db.rawQuery(selectQuery, null);
+
+        if (cursor.moveToFirst()) {
+            long id = cursor.getLong((cursor.getColumnIndex(ID_ODGOVORA)));
+            cursor.close();
+            return id;
+        }
+        cursor.close();
+
+        db = getWritableDatabase();
 
         ContentValues values = new ContentValues();
         values.put(NAZIV_ODGOVORA, odgovor);
@@ -183,17 +217,66 @@ public class DatabaseHelper extends SQLiteOpenHelper implements Firebase.Kategor
     }
 
     private boolean dodajPitanjaOdgovoriVezu(Pitanje pitanje, long idOdgovora) {
-        SQLiteDatabase db = this.getWritableDatabase();
+        String selectQuery = "SELECT * FROM " + PITANJA_ODGOVORI_TABLE + " WHERE " + ID_PITANJA_PITANJA_ODGOVORI + " = '" + pitanje.getNaziv() + "' AND " + ID_ODGOVORA_PITANJA_ODGOVORI + " = '" + idOdgovora + "'";
+
+        SQLiteDatabase db = getReadableDatabase();
+        Cursor cursor = db.rawQuery(selectQuery, null);
+
+        if (cursor.moveToFirst()) {
+            cursor.close();
+            return true;
+        }
+        cursor.close();
+
+        db = getWritableDatabase();
 
         ContentValues values = new ContentValues();
         values.put(ID_PITANJA_PITANJA_ODGOVORI, pitanje.getNaziv());
         values.put(ID_ODGOVORA_PITANJA_ODGOVORI, idOdgovora);
 
-        return db.insert(PITANJA_ODGOVORI_TABLE, null, values) != -1;
+        return db.insertWithOnConflict(PITANJA_ODGOVORI_TABLE, null, values, SQLiteDatabase.CONFLICT_IGNORE) != -1;
     }
 
-    public boolean dodajRanglistu(String nazivKviza, double procenatTacnih, String imeIgraca) {
-        SQLiteDatabase db = this.getWritableDatabase();
+    public void syncFirebaseIgraci() {
+        for (IgracRecord igracRecord : igracRecords) {
+            Firebase.dodajIgraca(igracRecord.nazivKviza, igracRecord.imeIgraca, igracRecord.procenatTacnih);
+        }
+        igracRecords.clear();
+    }
+
+    public void updateNazivRangliste(String nazivPostojecegKviza, String nazivNovogKviza) {
+        SQLiteDatabase db = getWritableDatabase();
+        db.execSQL("UPDATE " + RANGLISTE_TABLE + " SET " + ID_KVIZA_RANGLISTE + " = '" + nazivNovogKviza + "' WHERE " + ID_KVIZA_RANGLISTE + " = '" + nazivPostojecegKviza + "'");
+    }
+
+    private class IgracRecord {
+        private String nazivKviza;
+        private double procenatTacnih;
+        private String imeIgraca;
+
+        public IgracRecord(String nazivKviza, double procenatTacnih, String imeIgraca) {
+            this.nazivKviza = nazivKviza;
+            this.procenatTacnih = procenatTacnih;
+            this.imeIgraca = imeIgraca;
+        }
+    }
+
+    public boolean dodajIgraca(String nazivKviza, double procenatTacnih, String imeIgraca) {
+        String selectQuery = "SELECT * FROM " + RANGLISTE_TABLE + " WHERE " + ID_KVIZA_RANGLISTE + " = '" + nazivKviza + "' AND " + PROCENAT_TACNIH + " = '" + procenatTacnih + "' AND " + NAZIV_IGRACA + " = '" + imeIgraca + "'";
+
+        SQLiteDatabase db = getReadableDatabase();
+        Cursor cursor = db.rawQuery(selectQuery, null);
+
+        if (cursor.moveToFirst()) {
+            cursor.close();
+            return true;
+        }
+        cursor.close();
+
+        if (!KvizoviAkt.INTERNET_ACCESS)
+            igracRecords.add(new IgracRecord(nazivKviza, procenatTacnih, imeIgraca));
+
+        db = getWritableDatabase();
 
         ContentValues values = new ContentValues();
         values.put(ID_KVIZA_RANGLISTE, nazivKviza);
@@ -205,7 +288,7 @@ public class DatabaseHelper extends SQLiteOpenHelper implements Firebase.Kategor
 
 
     public void closeDatabase() {
-        SQLiteDatabase db = this.getReadableDatabase();
+        SQLiteDatabase db = getReadableDatabase();
         if (db != null && db.isOpen())
             db.close();
     }
@@ -228,25 +311,27 @@ public class DatabaseHelper extends SQLiteOpenHelper implements Firebase.Kategor
     public void addIgraci(ArrayList<String> igraci, Kviz kviz) {
         for (String igrac : igraci) {
             double procenatTacnih = Double.valueOf(igrac.substring(igrac.lastIndexOf("-") + 2, igrac.length() - 1));
-            String imeIgraca = igrac.substring(igrac.indexOf(".") + 2, igrac.lastIndexOf("-") - 2);
-            dodajRanglistu(kviz.getNaziv(), procenatTacnih, imeIgraca);
+            String imeIgraca = igrac.substring(igrac.indexOf(".") + 2, igrac.lastIndexOf("-") - 1);
+            dodajIgraca(kviz.getNaziv(), procenatTacnih, imeIgraca);
         }
     }
 
     @Override
     public void getPitanjeId(Pair<String, Pitanje> idPitanja) {
-
+        // ignored
     }
 
     @Override
     public void addPitanja(ArrayList<Pair<String, Pitanje>> pitanja) {
-        //for (Pair<String, Pitanje> pair : pitanja)
-        //    dodajPitanje(pair.second);
+        for (Pair<String, Pitanje> pair : pitanja)
+            dodajPitanje(pair.second);
     }
 
     public ArrayList<Kviz> kvizovi(final Kategorija kategorija) {
         ArrayList<Kviz> kvizovi = new ArrayList<>();
-        String selectQuery = "SELECT * FROM " + KVIZOVI_TABLE;
+        String selectQuery = "SELECT * FROM " + KVIZOVI_TABLE + " LEFT JOIN " + KATEGORIJE_TABLE + " ON " + ID_KATEGORIJE + " = " + NAZIV_KATEGORIJE;
+        if (kategorija != null)
+            selectQuery += " AND " + NAZIV_KATEGORIJE + " = '" + kategorija.getNaziv() + "'";
 
         SQLiteDatabase db = getReadableDatabase();
         Cursor cursor = db.rawQuery(selectQuery, null);
@@ -255,12 +340,12 @@ public class DatabaseHelper extends SQLiteOpenHelper implements Firebase.Kategor
             do {
                 Kviz kviz = new Kviz();
                 kviz.setNaziv(cursor.getString((cursor.getColumnIndex(NAZIV_KVIZA))));
-                String nazivKategorije = cursor.getString(cursor.getColumnIndex(ID_KATEGORIJE));
-                if (kategorija != null && (nazivKategorije == null || !nazivKategorije.equals(kategorija.getNaziv())))
-                    continue;
-                kviz.setKategorija(vratiKategoriju(nazivKategorije));
+                String nazivKategorije = cursor.getString(cursor.getColumnIndex(NAZIV_KATEGORIJE));
+                if (nazivKategorije == null)
+                    kviz.setKategorija(null);
+                else
+                    kviz.setKategorija(new Kategorija(nazivKategorije, cursor.getString(cursor.getColumnIndex(ID_IKONICE))));
                 kviz.setPitanja(vratiPitanja(kviz));
-
                 kvizovi.add(kviz);
             } while (cursor.moveToNext());
         }
@@ -292,6 +377,7 @@ public class DatabaseHelper extends SQLiteOpenHelper implements Firebase.Kategor
     private ArrayList<String> vratiOdgovore(Pitanje pitanje) {
         ArrayList<String> odgovori = new ArrayList<>();
         String selectQuery = "SELECT " + NAZIV_ODGOVORA + " FROM " + ODGOVORI_TABLE + ", " + PITANJA_ODGOVORI_TABLE + " WHERE " + ID_PITANJA_PITANJA_ODGOVORI + " = '" + pitanje.getNaziv() + "' AND " + PITANJA_ODGOVORI_TABLE + "." + ID_ODGOVORA_PITANJA_ODGOVORI + " = " + ODGOVORI_TABLE + "." + ID_ODGOVORA;
+
         SQLiteDatabase db = getReadableDatabase();
         Cursor cursor = db.rawQuery(selectQuery, null);
         if (cursor.moveToFirst()) {
@@ -303,18 +389,94 @@ public class DatabaseHelper extends SQLiteOpenHelper implements Firebase.Kategor
         return odgovori;
     }
 
-    private Kategorija vratiKategoriju(String nazivKategorije) {
-        Kategorija kategorija = new Kategorija();
-        kategorija.setNaziv(nazivKategorije);
-        String selectQuery = "SELECT " + ID_IKONICE + " FROM " + KATEGORIJE_TABLE + " WHERE " + NAZIV_KATEGORIJE + " = '" + nazivKategorije + "'";
+    public ArrayList<Kategorija> kategorije() {
+        ArrayList<Kategorija> kategorije = new ArrayList<>();
+        String selectQuery = "SELECT * FROM " + KATEGORIJE_TABLE;
 
         SQLiteDatabase db = getReadableDatabase();
         Cursor cursor = db.rawQuery(selectQuery, null);
+
         if (cursor.moveToFirst()) {
-            kategorija.setId(String.valueOf(cursor.getInt(cursor.getColumnIndex(ID_IKONICE))));
+            do {
+                Kategorija kategorija = new Kategorija();
+                kategorija.setNaziv(cursor.getString((cursor.getColumnIndex(NAZIV_KATEGORIJE))));
+                kategorija.setId(cursor.getString((cursor.getColumnIndex(ID_IKONICE))));
+                kategorije.add(kategorija);
+            } while (cursor.moveToNext());
         }
         cursor.close();
-        return kategorija;
+
+        return kategorije;
     }
 
+    public ArrayList<Pair<String, Pitanje>> pitanja() {
+        ArrayList<Pair<String, Pitanje>> pitanja = new ArrayList<>();
+        String selectQuery = "SELECT * FROM " + PITANJA_TABLE;
+
+        SQLiteDatabase db = getReadableDatabase();
+        Cursor cursor = db.rawQuery(selectQuery, null);
+
+        if (cursor.moveToFirst()) {
+            do {
+                Pitanje pitanje = new Pitanje();
+                pitanje.setNaziv(cursor.getString((cursor.getColumnIndex(NAZIV_PITANJA))));
+                pitanje.setTekstPitanja(cursor.getString((cursor.getColumnIndex(NAZIV_PITANJA))));
+                int indexTacnog = cursor.getInt(cursor.getColumnIndex(INDEX_TACNOG));
+                pitanje.setOdgovori(vratiOdgovore(pitanje));
+                pitanje.setTacan(pitanje.getOdgovori().get(indexTacnog));
+                pitanja.add(new Pair<>("", pitanje));
+            } while (cursor.moveToNext());
+        }
+        cursor.close();
+
+        return pitanja;
+    }
+
+    public ArrayList<String> rangLista(Kviz kviz) {
+        ArrayList<String> igraci = new ArrayList<>();
+        String selectQuery = "SELECT " + NAZIV_IGRACA + ", " + PROCENAT_TACNIH + " FROM " + RANGLISTE_TABLE + " WHERE " + ID_KVIZA_RANGLISTE + " = '" + kviz.getNaziv() + "' ORDER BY " + PROCENAT_TACNIH + " DESC";
+
+        SQLiteDatabase db = getReadableDatabase();
+        Cursor cursor = db.rawQuery(selectQuery, null);
+
+        if (cursor.moveToFirst()) {
+            int pozicija = 1;
+            do {
+                String pozicijaString = String.valueOf(pozicija);
+                pozicija++;
+                String imeString = cursor.getString((cursor.getColumnIndex(NAZIV_IGRACA)));
+                double procenatTacnih = cursor.getDouble((cursor.getColumnIndex(PROCENAT_TACNIH)));
+                String igrac = pozicijaString + ". " + imeString + " - " + procenatTacnih + "%";
+                igraci.add(igrac);
+            } while (cursor.moveToNext());
+        }
+        cursor.close();
+
+        return igraci;
+    }
+
+    public void azurirajKviz(String nazivPostojecegKviza, Kviz noviKviz) {
+        SQLiteDatabase db = getWritableDatabase();
+        String updateKvizInfo;
+        if (noviKviz.getKategorija() == null)
+            updateKvizInfo = "UPDATE " + KVIZOVI_TABLE + " SET " + NAZIV_KVIZA + " = '" + noviKviz.getNaziv() + "', " + ID_KATEGORIJE + " = " + null + " WHERE " + NAZIV_KVIZA + " = '" + nazivPostojecegKviza + "'";
+        else
+            updateKvizInfo = "UPDATE " + KVIZOVI_TABLE + " SET " + NAZIV_KVIZA + " = '" + noviKviz.getNaziv() + "', " + ID_KATEGORIJE + " = '" + noviKviz.getKategorija().getNaziv() + "' " + " WHERE " + NAZIV_KVIZA + " = '" + nazivPostojecegKviza + "'";
+        db.execSQL(updateKvizInfo);
+        db.execSQL("DELETE FROM " + KVIZOVI_PITANJA_TABLE + " WHERE " + ID_KVIZA_KVIZOVI_PITANJA + " = '" + nazivPostojecegKviza + "'");
+        for (Pitanje pitanje : noviKviz.getPitanja())
+            dodajKvizoviPitanjaVezu(noviKviz, pitanje);
+    }
+
+    public void ocistiBazu() {
+        SQLiteDatabase database = getWritableDatabase();
+        onUpgrade(database, DATABSE_VERSION, DATABSE_VERSION);
+        database.execSQL("DELETE FROM " + KATEGORIJE_TABLE);
+        database.execSQL("DELETE FROM " + KVIZOVI_TABLE);
+        database.execSQL("DELETE FROM " + RANGLISTE_TABLE);
+        database.execSQL("DELETE FROM " + PITANJA_TABLE);
+        database.execSQL("DELETE FROM " + KVIZOVI_PITANJA_TABLE);
+        database.execSQL("DELETE FROM " + ODGOVORI_TABLE);
+        database.execSQL("DELETE FROM " + PITANJA_ODGOVORI_TABLE);
+    }
 }
