@@ -256,11 +256,12 @@ public class Firebase {
         return true;
     }
 
-    public static void dodajIgraca(final String nazivKviza, final String ime, final double procenatTacnih) {
+    public static void dodajIgraca(final String nazivKviza, final String ime, final double procenatTacnih, final boolean firebaseSync) {
         new AsyncTask<String, Integer, Void>() {
             @Override
             protected Void doInBackground(String... strings) {
-                DatabaseHelper.getInstance().dodajIgraca(nazivKviza, procenatTacnih, ime);
+                if (!firebaseSync && !DatabaseHelper.getInstance().dodajIgraca(nazivKviza, procenatTacnih, ime))
+                    return null; // vec postoji isti igrac sa istim procentom
                 try {
                     StringBuilder idRangliste = new StringBuilder();
                     if (!postojiRanglista(nazivKviza, idRangliste))

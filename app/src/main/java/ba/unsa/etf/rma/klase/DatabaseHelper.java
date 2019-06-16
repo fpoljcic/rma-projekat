@@ -239,7 +239,7 @@ public class DatabaseHelper extends SQLiteOpenHelper implements Firebase.Kategor
 
     public void syncFirebaseIgraci() {
         for (IgracRecord igracRecord : igracRecords) {
-            Firebase.dodajIgraca(igracRecord.nazivKviza, igracRecord.imeIgraca, igracRecord.procenatTacnih);
+            Firebase.dodajIgraca(igracRecord.nazivKviza, igracRecord.imeIgraca, igracRecord.procenatTacnih, true);
         }
         igracRecords.clear();
     }
@@ -269,7 +269,7 @@ public class DatabaseHelper extends SQLiteOpenHelper implements Firebase.Kategor
 
         if (cursor.moveToFirst()) {
             cursor.close();
-            return true;
+            return false;
         }
         cursor.close();
 

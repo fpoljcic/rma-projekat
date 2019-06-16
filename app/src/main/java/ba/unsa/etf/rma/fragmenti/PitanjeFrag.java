@@ -140,7 +140,7 @@ public class PitanjeFrag extends Fragment {
                     @Override
                     public void onClick(DialogInterface dialog, int i) {
                         ime = String.valueOf(editText.getText());
-                        Firebase.dodajIgraca(callback.vratiNazivKviza(), ime, callback.vratiProcenatTacnih());
+                        Firebase.dodajIgraca(callback.vratiNazivKviza(), ime, callback.vratiProcenatTacnih(), false);
                         addRangListaFragment();
                     }
                 })
