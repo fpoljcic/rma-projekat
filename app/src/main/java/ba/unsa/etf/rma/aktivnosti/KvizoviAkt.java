@@ -38,7 +38,7 @@ import ba.unsa.etf.rma.klase.Kategorija;
 import ba.unsa.etf.rma.klase.Kviz;
 import ba.unsa.etf.rma.klase.NetworkChangeReceiver;
 
-public class KvizoviAkt extends AppCompatActivity implements ListFrag.OnFragmentInteractionListener, DetailFrag.OnFragmentInteractionListener, Firebase.KvizInterface, Firebase.KategorijaInterface {
+public class KvizoviAkt extends AppCompatActivity implements ListFrag.OnFragmentInteractionListener, DetailFrag.OnFragmentInteractionListener, Firebase.KvizInterface, Firebase.KategorijaInterface, NetworkChangeReceiver.NetworkInterface {
     private Spinner categorySpinner;
     private ListView quizList;
     private ArrayList<Kviz> kvizovi = new ArrayList<>();
@@ -227,7 +227,7 @@ public class KvizoviAkt extends AppCompatActivity implements ListFrag.OnFragment
                 if (eventStartDateTime < currentDateTime)
                     showAlert("Imate trenutno aktivan događaj u kalendaru!");
                 else
-                    showAlert("Imate događaj u kalendaru za " + ((eventStartDateTime - new Date().getTime()) / 1000) / 60 + " minuta!");
+                    showAlert("Imate događaj u kalendaru za " + Math.round((eventStartDateTime - currentDateTime) / 600.0) / 100.0 + " minuta!");
                 cur.close();
                 return true;
             }
@@ -394,6 +394,7 @@ public class KvizoviAkt extends AppCompatActivity implements ListFrag.OnFragment
         categoryAdapter.notifyDataSetChanged();
     }
 
+    @Override
     public void notifyNetChange(boolean internetAccess) {
         if (internetAccess) {
             loadData();

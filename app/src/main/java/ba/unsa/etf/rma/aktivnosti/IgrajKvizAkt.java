@@ -1,6 +1,7 @@
 package ba.unsa.etf.rma.aktivnosti;
 
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
 import android.provider.AlarmClock;
 import android.support.v4.app.Fragment;
@@ -15,15 +16,19 @@ import ba.unsa.etf.rma.R;
 import ba.unsa.etf.rma.fragmenti.InformacijeFrag;
 import ba.unsa.etf.rma.fragmenti.PitanjeFrag;
 import ba.unsa.etf.rma.fragmenti.RangLista;
+import ba.unsa.etf.rma.klase.DatabaseHelper;
 import ba.unsa.etf.rma.klase.Firebase;
 import ba.unsa.etf.rma.klase.Kviz;
+import ba.unsa.etf.rma.klase.NetworkChangeReceiver;
 
-public class IgrajKvizAkt extends AppCompatActivity implements InformacijeFrag.OnFragmentInteractionListener, PitanjeFrag.OnFragmentInteractionListener, Firebase.RangListaInterface {
+public class IgrajKvizAkt extends AppCompatActivity implements InformacijeFrag.OnFragmentInteractionListener, PitanjeFrag.OnFragmentInteractionListener, Firebase.RangListaInterface, NetworkChangeReceiver.NetworkInterface {
     private Kviz kviz;
     private PitanjeFrag pitanjeFrag;
     private InformacijeFrag informacijeFrag;
     private RangLista rangLista;
     private boolean isActive = true;
+    private IntentFilter filter = new IntentFilter("android.net.conn.CONNECTIVITY_CHANGE");
+    private NetworkChangeReceiver receiver = new NetworkChangeReceiver(this);
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,6 +38,18 @@ public class IgrajKvizAkt extends AppCompatActivity implements InformacijeFrag.O
         dodajFragmente();
         if (kviz.getPitanja().size() != 0)
             setAlarm();
+    }
+
+    @Override
+    protected void onPostResume() {
+        super.onPostResume();
+        registerReceiver(receiver, filter);
+    }
+
+    @Override
+    protected void onPause() {
+        unregisterReceiver(receiver);
+        super.onPause();
     }
 
     private void setAlarm() {
@@ -126,5 +143,13 @@ public class IgrajKvizAkt extends AppCompatActivity implements InformacijeFrag.O
         fragmentTransaction.add(R.id.pitanjePlace, rangLista);
         if (isActive)
             fragmentTransaction.commit();
+    }
+
+    @Override
+    public void notifyNetChange(boolean internetAccess) {
+        if (internetAccess) {
+            DatabaseHelper.getInstance().syncFirebase();
+            DatabaseHelper.getInstance().syncFirebaseIgraci();
+        }
     }
 }
