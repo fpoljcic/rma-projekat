@@ -25,8 +25,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
 
-import ba.unsa.etf.rma.aktivnosti.KvizoviAkt;
-
 
 public class Firebase {
     private static String token = "";
@@ -168,7 +166,7 @@ public class Firebase {
 
             @Override
             protected ArrayList<Pair<String, Pitanje>> doInBackground(String... strings) {
-                if (!KvizoviAkt.INTERNET_ACCESS)
+                if (!NetworkChangeReceiver.INTERNET_ACCESS)
                     return DatabaseHelper.getInstance().pitanja();
                 ArrayList<Pair<String, Pitanje>> pitanja = new ArrayList<>();
                 try {
@@ -504,7 +502,7 @@ public class Firebase {
 
             @Override
             protected ArrayList<String> doInBackground(String... strings) {
-                if (!KvizoviAkt.INTERNET_ACCESS)
+                if (!NetworkChangeReceiver.INTERNET_ACCESS)
                     return DatabaseHelper.getInstance().rangLista(kviz);
                 ArrayList<String> igraci = new ArrayList<>();
                 StringBuilder idRangliste = new StringBuilder();
@@ -559,7 +557,7 @@ public class Firebase {
 
             @Override
             protected ArrayList<Kategorija> doInBackground(String... strings) {
-                if (!KvizoviAkt.INTERNET_ACCESS)
+                if (!NetworkChangeReceiver.INTERNET_ACCESS)
                     return DatabaseHelper.getInstance().kategorije();
                 ArrayList<Kategorija> kategorije = new ArrayList<>();
                 try {
@@ -602,7 +600,7 @@ public class Firebase {
 
             @Override
             protected ArrayList<Kviz> doInBackground(String... strings) {
-                if (!KvizoviAkt.INTERNET_ACCESS)
+                if (!NetworkChangeReceiver.INTERNET_ACCESS)
                     return DatabaseHelper.getInstance().kvizovi(kategorija);
                 ArrayList<Kviz> kvizovi = new ArrayList<>();
                 try {

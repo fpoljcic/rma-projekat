@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import com.maltaisn.icondialog.Icon;
 import com.maltaisn.icondialog.IconDialog;
@@ -17,6 +18,7 @@ import java.util.ArrayList;
 import ba.unsa.etf.rma.R;
 import ba.unsa.etf.rma.klase.Firebase;
 import ba.unsa.etf.rma.klase.Kategorija;
+import ba.unsa.etf.rma.klase.NetworkChangeReceiver;
 
 public class DodajKategorijuAkt extends AppCompatActivity implements IconDialog.Callback, Firebase.KategorijaProvjera {
     private EditText categoryNameField, categoryIconField;
@@ -59,6 +61,10 @@ public class DodajKategorijuAkt extends AppCompatActivity implements IconDialog.
         addCategoryBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                if (!NetworkChangeReceiver.INTERNET_ACCESS) {
+                    Toast.makeText(getApplicationContext(), "Nemate internet konekcije!", Toast.LENGTH_SHORT).show();
+                    return;
+                }
                 boolean errorPresent = false;
                 if (categoryNameField.getText().toString().isEmpty()) {
                     errorPresent = true;

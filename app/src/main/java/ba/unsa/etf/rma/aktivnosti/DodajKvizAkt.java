@@ -14,6 +14,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Spinner;
+import android.widget.Toast;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -25,6 +26,7 @@ import ba.unsa.etf.rma.R;
 import ba.unsa.etf.rma.klase.Firebase;
 import ba.unsa.etf.rma.klase.Kategorija;
 import ba.unsa.etf.rma.klase.Kviz;
+import ba.unsa.etf.rma.klase.NetworkChangeReceiver;
 import ba.unsa.etf.rma.klase.Pitanje;
 
 public class DodajKvizAkt extends AppCompatActivity implements Firebase.PitanjeInterface, Firebase.KvizProvjera {
@@ -82,6 +84,10 @@ public class DodajKvizAkt extends AppCompatActivity implements Firebase.PitanjeI
         dodajKvizBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if (!NetworkChangeReceiver.INTERNET_ACCESS) {
+                    Toast.makeText(getApplicationContext(), "Nemate internet konekcije!", Toast.LENGTH_SHORT).show();
+                    return;
+                }
                 // Dodaj kviz
                 if (quizName.getText().toString().isEmpty()) {
                     quizName.setBackgroundResource(R.color.colorError);

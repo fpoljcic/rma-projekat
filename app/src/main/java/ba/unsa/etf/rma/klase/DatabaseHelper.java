@@ -9,8 +9,6 @@ import android.util.Pair;
 
 import java.util.ArrayList;
 
-import ba.unsa.etf.rma.aktivnosti.KvizoviAkt;
-
 public class DatabaseHelper extends SQLiteOpenHelper implements Firebase.KategorijaInterface, Firebase.KvizInterface, Firebase.PitanjeInterface, Firebase.RangListaInterface {
     public static final String DATABASE_NAME = "rma_baza.db";
 
@@ -273,7 +271,7 @@ public class DatabaseHelper extends SQLiteOpenHelper implements Firebase.Kategor
         }
         cursor.close();
 
-        if (!KvizoviAkt.INTERNET_ACCESS)
+        if (!NetworkChangeReceiver.INTERNET_ACCESS)
             igracRecords.add(new IgracRecord(nazivKviza, procenatTacnih, imeIgraca));
 
         db = getWritableDatabase();

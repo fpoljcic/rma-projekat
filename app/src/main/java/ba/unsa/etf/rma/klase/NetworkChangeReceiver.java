@@ -6,6 +6,7 @@ import android.content.Intent;
 
 public class NetworkChangeReceiver extends BroadcastReceiver {
     private NetworkInterface networkInterface;
+    public static boolean INTERNET_ACCESS;
 
     public NetworkChangeReceiver(NetworkInterface networkInterface) {
         this.networkInterface = networkInterface;
@@ -17,8 +18,11 @@ public class NetworkChangeReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(final Context context, final Intent intent) {
         int status = NetworkUtil.getConnectivityStatusString(context);
-        if ("android.net.conn.CONNECTIVITY_CHANGE".equals(intent.getAction()) && networkInterface != null)
-            networkInterface.notifyNetChange(!(status == NetworkUtil.NETWORK_STATUS_NOT_CONNECTED));
+        if ("android.net.conn.CONNECTIVITY_CHANGE".equals(intent.getAction())) {
+            INTERNET_ACCESS = !(status == NetworkUtil.NETWORK_STATUS_NOT_CONNECTED);
+            if (networkInterface != null)
+                networkInterface.notifyNetChange(INTERNET_ACCESS);
+        }
     }
 
     public interface NetworkInterface {
